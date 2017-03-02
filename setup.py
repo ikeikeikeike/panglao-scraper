@@ -12,6 +12,8 @@ requirements = [
 
     'gevent==1.2.1',
     'eventlet==0.20.1',
+
+    'celery==4.0.2',
     'gunicorn==19.6.0',
 
     'youtube-dl==2017.2.28',
