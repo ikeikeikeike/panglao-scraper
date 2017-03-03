@@ -31,15 +31,10 @@ def download(url, opts=None):
     return result
 
 
-def _progress_hook(d):
-    if d['status'] == 'finished':
-        cache.set(d['filename'], {})
-    else:
-        cache.set(d['filename'], d)
-
-
 global_opts = {
     'outtmpl': '/tmp/%(title)s-%(id)s.%(ext)s',
     'format': 'bestaudio/best',
-    'progress_hooks': [_progress_hook],
+    'progress_hooks': [
+        lambda d: cache.set(d['filename'], d),
+    ],
 }
