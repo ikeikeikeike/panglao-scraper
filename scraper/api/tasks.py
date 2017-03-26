@@ -33,7 +33,6 @@ def download(url, opts=None):
 
 global_opts = {
     'outtmpl': '/tmp/%(title)s-%(id)s.%(ext)s',
-    'f': 'bestvideo,best', 'format': 'bestvideo,best',
     'progress_hooks': [
         lambda d: cache.set(d['filename'], d),
     ],
