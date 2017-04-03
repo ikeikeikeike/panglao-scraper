@@ -20,14 +20,18 @@ def download(url, opts=None):
         try:
             result = ydl.extract_info(url, download=dl)
         except youtube_dl.utils.DownloadError as err:
-            logger.error('Failure Info: %s', url)
+            logger.error('Failure Info: %s, %r', url, err)
             raise
 
     if not result.get('thumbnail'):
         image = extractor.Image(url)
         result.update({'thumbnail': image.general_choice()})
 
-    result.update({'outputfile': global_opts['outtmpl'] % result})
+    outtmpl = result
+    if 'entries' in result:
+        outtmpl = result['entries'][0]
+
+    result.update({'outputfile': global_opts['outtmpl'] % outtmpl})
     return result
 
 
