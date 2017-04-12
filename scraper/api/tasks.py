@@ -10,13 +10,20 @@ from . import cache
 
 logger = logging.getLogger(__name__)
 
+global_opts = {
+    'outtmpl': '/tmp/%(title)s-%(id)s.%(ext)s',
+    'progress_hooks': [],
+}
+
 
 @shared_task
 def download(url, opts=None):
-    opts = opts or {}
+    opts = opts or global_opts
+    opts = {**opts, **{'progress_hooks': [lambda d: cache.set(url, d)]}}
+
     dl = opts.pop('download', True)
 
-    with youtube_dl.YoutubeDL(opts or global_opts) as ydl:
+    with youtube_dl.YoutubeDL(opts) as ydl:
         try:
             result = ydl.extract_info(url, download=dl)
         except youtube_dl.utils.DownloadError as err:
@@ -33,11 +40,3 @@ def download(url, opts=None):
 
     result.update({'outputfile': global_opts['outtmpl'] % outtmpl})
     return result
-
-
-global_opts = {
-    'outtmpl': '/tmp/%(title)s-%(id)s.%(ext)s',
-    'progress_hooks': [
-        lambda d: cache.set(d['filename'], d),
-    ],
-}
