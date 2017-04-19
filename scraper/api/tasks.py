@@ -1,4 +1,5 @@
 from __future__ import absolute_import, unicode_literals
+import hashlib
 import logging
 
 from celery import shared_task
@@ -10,16 +11,17 @@ from . import cache
 
 logger = logging.getLogger(__name__)
 
-global_opts = {
-    'outtmpl': '/tmp/%(title)s-%(id)s.%(ext)s',
-    'progress_hooks': [],
-}
-
 
 @shared_task
 def download(url, opts=None):
-    opts = opts or global_opts
-    opts = {**opts, **{'progress_hooks': [lambda d: cache.set(url, d)]}}
+    md5 = hashlib.md5(url.encode()).hexdigest()
+    default_opts = {
+        'outtmpl': '/tmp/{}.%(ext)s'.format(md5),
+        'progress_hooks': [lambda d: cache.set(url, d)]
+    }
+
+    opts = opts or {}
+    opts = {**opts, **default_opts}
 
     dl = opts.pop('download', True)
 
@@ -38,5 +40,5 @@ def download(url, opts=None):
     if 'entries' in result:
         outtmpl = result['entries'][0]
 
-    result.update({'outputfile': global_opts['outtmpl'] % outtmpl})
+    result.update({'outputfile': default_opts['outtmpl'] % outtmpl})
     return result
