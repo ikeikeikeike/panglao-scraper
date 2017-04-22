@@ -17,7 +17,7 @@ def download(url, opts=None):
     md5 = hashlib.md5(url.encode()).hexdigest()
     default_opts = {
         'outtmpl': '/tmp/{}.%(ext)s'.format(md5),
-        'progress_hooks': [lambda d: cache.set(url, d), lambda d: print(d)]
+        'progress_hooks': [lambda d: cache.set(url, d)]
     }
 
     opts = opts or {}
