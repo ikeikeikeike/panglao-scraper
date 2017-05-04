@@ -12,7 +12,8 @@ from . import cache
 logger = logging.getLogger(__name__)
 
 
-@shared_task
+@shared_task(autoretry_for=(Exception, ),
+             retry_kwargs={'max_retries': 5})
 def download(url, opts=None):
     md5 = hashlib.md5(url.encode()).hexdigest()
     default_opts = {
