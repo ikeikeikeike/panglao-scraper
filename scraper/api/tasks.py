@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 def download(url, opts=None):
     md5 = hashlib.md5(url.encode()).hexdigest()
     default_opts = {
+        'hls_prefer_native': True,
         'outtmpl': '/tmp/{}.%(ext)s'.format(md5),
         'progress_hooks': [lambda d: cache.set(url, d)]
     }
