@@ -6,6 +6,9 @@ SECRET_KEY = 'j!olsl1$0h!k4hqsx@7d@2iu9cgtv77+d90$insjcco7#l38a-'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
+# Configures manually
+ENVIRONMENT = ''
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -16,6 +19,7 @@ INSTALLED_APPS = [
 
     'core',
     'api',
+    'cheapcdn',
 ]
 
 MIDDLEWARE = [
@@ -99,3 +103,95 @@ CELERY_BROKER_URL = 'redis://localhost:6379/11'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/11'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+MINIO_HOST = '127.0.0.1:9000'
+MINIO_ACCESS_KEY = ''
+MINIO_SECRET_KEY = ''
+
+# logging
+LOGGING_PREFIX = 'scraper'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': ('%(log_color)s[%(levelname)s]'
+                       '[in %(pathname)s:%(lineno)d]'
+                       '%(asctime)s %(process)d %(thread)d '
+                       '%(module)s: %(message)s'),
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            'log_colors': {
+                'DEBUG': 'bold_black',
+                'INFO': 'white',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'bold_red',
+            },
+        },
+        'sql': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': '%(cyan)s[SQL] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'syslog_verbose': {
+            'format': ('{}:[%(levelname)s] [in %(pathname)s:%(lineno)d] '
+                       '%(asctime)s %(process)d %(thread)d '
+                       '%(module)s: %(message)s'.format(LOGGING_PREFIX)),
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'sql': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'sql'
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'sentry': {
+            'level': 'ERROR',  # To capture more than ERROR, change to WARNING, INFO, etc.
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'tags': {'environment': ENVIRONMENT},
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        'django.db.backends': {
+            'handlers': ['sql'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        LOGGING_PREFIX: {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    }
+}

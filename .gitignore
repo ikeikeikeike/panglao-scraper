@@ -91,3 +91,5 @@ ENV/
 
 *.sqlite3
 tags
+
+/scraper/scraper/overwrite_logging.example

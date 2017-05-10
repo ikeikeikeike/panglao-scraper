@@ -6,6 +6,7 @@ requirements = [
     'Django==1.10.5',
     'django-redis==4.7.0',
     'psycopg2==2.6.2',
+    'colorlog==2.10.0',
 
     'pyquery==1.2.17',
     'requests==2.13.0',
@@ -16,6 +17,8 @@ requirements = [
     'celery==4.0.2',
     'gunicorn==19.6.0',
 
+    'raven==6.0.0',
+    'minio==2.2.1',
     'youtube-dl',
 ]
 
@@ -29,7 +32,7 @@ tests_require = [
     #  'pytest-mock==1.2',
 ]
 
-circle_require = [
+ci_require = [
     #  'coverage==4.2',
 ]
 
@@ -38,7 +41,7 @@ extras_require = {
         #  'django-debug-toolbar==1.6'
     ] + tests_require,
     'test': tests_require,
-    'circle': circle_require + tests_require,
+    'ci': ci_require + tests_require,
 }
 
 
