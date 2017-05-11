@@ -6,7 +6,8 @@ from core.models import BaseModel
 
 
 class Node(BaseModel):
-    url = models.CharField(max_length=255)
+    host = models.CharField(max_length=255)
+    free = models.CharField(max_length=255)
     alive = models.BooleanField(default=True, db_index=True)
 
     class Meta:
@@ -16,7 +17,7 @@ class Node(BaseModel):
 class Object(BaseModel):
     id = models.BigAutoField(primary_key=True)
     node = models.ForeignKey(Node, db_index=True)
-    url = models.TextField(db_index=True)
+    key = models.TextField(db_index=True)
 
     class Meta:
         db_table = 'objects'

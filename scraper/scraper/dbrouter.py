@@ -22,6 +22,6 @@ class DBRouter(object):
                 return False
 
     def allow_migrate(self, db, app_label, **hints):
-        # if db == 'cheapcdn' and app_label == 'cheapcdn':
-        #     return True
+        if db == 'cheapcdn' and app_label == 'cheapcdn':
+            return True
         return False

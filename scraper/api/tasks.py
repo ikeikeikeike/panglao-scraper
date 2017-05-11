@@ -5,7 +5,9 @@ import logging
 from celery import shared_task
 
 import youtube_dl
-from core import extractor
+
+#  from core import extractor
+from cheapcdn import client
 
 from . import cache
 
@@ -34,13 +36,19 @@ def download(url, opts=None):
             logger.error('Failure Info: %s, %r', url, err)
             raise
 
-    if dl is not True and not result.get('thumbnail'):
-        image = extractor.Image(url)
-        result.update({'thumbnail': image.general_choice()})
+    # XXX: Once disabled.
+    #
+    # if dl is not True and not result.get('thumbnail'):
+    #     image = extractor.Image(url)
+    #     result.update({'thumbnail': image.general_choice()})
 
     outtmpl = result
     if 'entries' in result:
         outtmpl = result['entries'][0]
 
-    result.update({'outputfile': default_opts['outtmpl'] % outtmpl})
+    outfile = default_opts['outtmpl'] % outtmpl
+
+    dl and client.cheaper().upfile(outfile)
+    result.update({'outputfile': outfile})
+
     return result
