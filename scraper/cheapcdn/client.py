@@ -2,6 +2,8 @@ import os
 import glob
 import shutil
 import random
+import mimetypes
+import subprocess
 
 from django.conf import settings
 
@@ -104,10 +106,37 @@ class Mc:
         )
 
     def upfile(self, filename):
+        if not self._upfile(filename):
+            return
+
+        base, _ = os.path.splitext(filename)
+
+        if not os.path.exists(f'{base}.jpg'):
+            _generate_jpg(filename)
+
+        self._upfile(f'{base}.jpg')
+
+    def _upfile(self, filename):
         f, size = open(filename, 'rb'), os.stat(filename).st_size
         key = os.path.basename(filename)
+        mime, _ = mimetypes.guess_type(filename)  # TODO: Will be specific extractor
 
-        self._mc.put_object(self._bucket, key, f, size)
+        etag = self._mc.put_object(self._bucket, key, f, size,
+                                   content_type=mime or 'video/mp4')
+        return etag
+
+
+def _generate_jpg(filename):
+    dest, _ = os.path.splitext(filename)
+    cmd = [
+        'ffmpeg',
+        '-ss', '60',
+        '-i', filename,
+        '-qscale:v', '0',
+        '-vframes', '1',
+        f'{dest}.jpg'
+    ]
+    return subprocess.run(cmd)
 
 
 def _extract_host():

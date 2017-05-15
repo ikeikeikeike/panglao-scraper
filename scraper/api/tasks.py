@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 def download(url, opts=None):
     md5 = hashlib.md5(url.encode()).hexdigest()
     default_opts = {
+        'writethumbnail': True,
         'hls_prefer_native': True,
         'outtmpl': '/tmp/{}.%(ext)s'.format(md5),
         'progress_hooks': [lambda d: cache.set(url, d)]
@@ -36,19 +37,14 @@ def download(url, opts=None):
             logger.error('Failure Info: %s, %r', url, err)
             raise
 
-    # XXX: Once disabled.
-    #
-    # if dl is not True and not result.get('thumbnail'):
-    #     image = extractor.Image(url)
-    #     result.update({'thumbnail': image.general_choice()})
-
     outtmpl = result
     if 'entries' in result:
         outtmpl = result['entries'][0]
 
     outfile = default_opts['outtmpl'] % outtmpl
 
+    # upload movie and image
     dl and client.cheaper().upfile(outfile)
-    result.update({'outputfile': outfile})
 
+    result.update({'outputfile': outfile})
     return result
