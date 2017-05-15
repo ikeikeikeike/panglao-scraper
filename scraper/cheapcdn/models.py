@@ -7,7 +7,7 @@ from core.models import BaseModel
 
 class Node(BaseModel):
     host = models.CharField(max_length=255)
-    free = models.CharField(max_length=255)
+    free = models.BigIntegerField(null=True)
     alive = models.BooleanField(default=True, db_index=True)
 
     class Meta:
@@ -16,7 +16,7 @@ class Node(BaseModel):
 
 class Object(BaseModel):
     id = models.BigAutoField(primary_key=True)
-    node = models.ForeignKey(Node, db_index=True)
+    node = models.ForeignKey(Node, null=True, db_index=True)
     key = models.TextField(db_index=True)
 
     class Meta:

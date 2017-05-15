@@ -1,4 +1,6 @@
 import os
+import glob
+import shutil
 import random
 
 from django.conf import settings
@@ -8,6 +10,8 @@ from minio import (
     policy,
     error
 )
+
+import netifaces as ni
 
 from core import (
     logging,
@@ -32,23 +36,19 @@ def cheaper():
     return cheapcdn
 
 
-def minio_client(host=None):
-    return Minio(
-        host,
-        access_key=settings.MINIO_ACCESS_KEY,
-        secret_key=settings.MINIO_SECRET_KEY,
-        secure=False
-    )
-
-
 class CheapCDN:
     def __init__(self):
         self._mcs = self.load()
 
     def load(self):
+        objects = models.Node.objects
+
+        node, _ = objects.get_or_create(host=_extract_host())
+        node.free = _extract_free()
+        node.save()
+
         mcs = []
-        for node in models.Node.objects.filter(alive=True):
-            #  node.free =
+        for node in objects.filter(alive=True):
             mcs.append(Mc(node))
         return mcs
 
@@ -56,7 +56,7 @@ class CheapCDN:
         mcs, weights = [], []
         for mc in self._mcs:
             mcs.append(mc)
-            weights.append(mc.free)
+            weights.append(mc.node.free)
 
         k = random.choices(mcs, weights=weights, k=1)
         return k and k[0]
@@ -67,9 +67,9 @@ class CheapCDN:
 
     def upfile(self, filename):
         key = os.path.basename(filename)
-        obj, new = models.Object.objects.get_or_create(key=key)
+        obj, _ = models.Object.objects.get_or_create(key=key)
 
-        if not new:
+        if obj.node:
             mc = self.mc(obj.node)
         else:
             mc = self.choice()
@@ -87,7 +87,7 @@ class CheapCDN:
 class Mc:
     def __init__(self, node, bucket=None):
         self.node = node
-        self._mc = minio_client(node.host)
+        self._mc = _minio_client(node.host)
         self._bucket = bucket or settings.MINIO_BUCKET
 
         self.prepare_bucket()
@@ -108,3 +108,37 @@ class Mc:
         key = os.path.basename(filename)
 
         self._mc.put_object(self._bucket, key, f, size)
+
+
+def _extract_host():
+    """ workaround until release this
+        https://github.com/minio/mc/pull/2036
+    """
+    try:
+        host = ni.ifaddresses('eth1')[2][0]['addr']
+    except ValueError:
+        host = '127.0.0.1'
+
+    return f'{host}:9091'
+
+
+def _extract_free():
+    """ workaround until release
+        this https://github.com/minio/mc/pull/2036
+    """
+    mnt = glob.glob('/mnt/object*')
+    mnt = mnt[0] if mnt else ''
+
+    try:
+        return shutil.disk_usage(mnt).free
+    except (FileNotFoundError, TypeError):
+        return 1024
+
+
+def _minio_client(host=None):
+    return Minio(
+        host,
+        access_key=settings.MINIO_ACCESS_KEY,
+        secret_key=settings.MINIO_SECRET_KEY,
+        secure=False
+    )
