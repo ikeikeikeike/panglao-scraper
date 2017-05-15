@@ -123,6 +123,7 @@ class Mc:
 
         etag = self._mc.put_object(self._bucket, key, f, size,
                                    content_type=mime or 'video/mp4')
+        os.remove(filename)  # XXX: Remove file
         return etag
 
 
