@@ -17,7 +17,7 @@ class Node(BaseModel):
 class Object(BaseModel):
     id = models.BigAutoField(primary_key=True)
     node = models.ForeignKey(Node, null=True, db_index=True)
-    key = models.TextField(db_index=True)
+    name = models.TextField(db_index=True)
 
     class Meta:
         db_table = 'objects'

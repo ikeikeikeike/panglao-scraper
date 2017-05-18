@@ -14,6 +14,15 @@ from . import cache
 logger = logging.getLogger(__name__)
 
 
+def info(url, opts=None):
+    with youtube_dl.YoutubeDL(opts or {}) as ydl:
+        try:
+            return ydl.extract_info(url, download=False)
+        except youtube_dl.utils.DownloadError as err:
+            logger.error('Failure Info: %s, %r', url, err)
+            raise
+
+
 @shared_task(autoretry_for=(Exception, ),
              retry_kwargs={'max_retries': 5})
 def download(url, opts=None):
@@ -28,13 +37,11 @@ def download(url, opts=None):
     opts = opts or {}
     opts = {**opts, **default_opts}
 
-    dl = opts.pop('download', True)
-
     with youtube_dl.YoutubeDL(opts) as ydl:
         try:
-            result = ydl.extract_info(url, download=dl)
+            result = ydl.extract_info(url, download=True)
         except youtube_dl.utils.DownloadError as err:
-            logger.error('Failure Info: %s, %r', url, err)
+            logger.error('Failure Download: %s, %r', url, err)
             raise
 
     outtmpl = result
@@ -43,8 +50,8 @@ def download(url, opts=None):
 
     outfile = default_opts['outtmpl'] % outtmpl
 
-    # upload movie and image
-    dl and client.cheaper().upfile(outfile)
+    # Upload video and image
+    client.cheaper().upfile(outfile)
 
     result.update({'outputfile': outfile})
     return result

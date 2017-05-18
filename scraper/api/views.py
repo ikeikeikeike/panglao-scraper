@@ -8,8 +8,7 @@ from . import cache
 
 def info(request, encoded):
     url = base64.b64decode(encoded).decode()
-    result = tasks.download(url, opts={'download': False})
-    return http.JsonResponse(result)
+    return http.JsonResponse(tasks.info(url))
 
 
 def progress(request, encoded):

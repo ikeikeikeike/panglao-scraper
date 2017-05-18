@@ -68,8 +68,8 @@ class CheapCDN:
         return mc and mc[0]
 
     def upfile(self, filename):
-        key = os.path.basename(filename)
-        obj, _ = models.Object.objects.get_or_create(key=key)
+        name = os.path.basename(filename)
+        obj, _ = models.Object.objects.get_or_create(name=name)
 
         if obj.node:
             mc = self.mc(obj.node)
@@ -118,10 +118,10 @@ class Mc:
 
     def _upfile(self, filename):
         f, size = open(filename, 'rb'), os.stat(filename).st_size
-        key = os.path.basename(filename)
+        name = os.path.basename(filename)
         mime, _ = mimetypes.guess_type(filename)  # TODO: Will be specific extractor
 
-        etag = self._mc.put_object(self._bucket, key, f, size,
+        etag = self._mc.put_object(self._bucket, name, f, size,
                                    content_type=mime or 'video/mp4')
         os.remove(filename)  # XXX: Remove file
         return etag
