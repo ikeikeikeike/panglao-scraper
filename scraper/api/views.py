@@ -1,9 +1,12 @@
+import uuid
 import base64
 
 from django import http
+from django.core.cache import caches
 
 from . import tasks
-from . import cache
+
+store = caches['progress']
 
 
 def info(request, encoded):
@@ -11,12 +14,15 @@ def info(request, encoded):
     return http.JsonResponse(tasks.info(url))
 
 
-def progress(request, encoded):
-    filename = base64.b64decode(encoded).decode()
-    return http.JsonResponse(cache.get(filename) or {})
-
-
 def download(request, encoded):
     url = base64.b64decode(encoded).decode()
-    tasks.download.delay(url)
-    return http.JsonResponse({})
+    outfile = str(uuid.uuid4())
+
+    tasks.download.delay(url, opts=dict(outfile=outfile))
+    res = tasks.download(url, opts=dict(outfile=outfile, download=False))
+    return http.JsonResponse(res)
+
+
+def progress(request, encoded):
+    key = base64.b64decode(encoded).decode()
+    return http.JsonResponse(store.get(key) or {})

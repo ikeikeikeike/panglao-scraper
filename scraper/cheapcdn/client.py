@@ -6,6 +6,7 @@ import mimetypes
 import subprocess
 
 from django.conf import settings
+from django.db import transaction
 
 from minio import (
     Minio,
@@ -45,7 +46,8 @@ class CheapCDN:
     def load(self):
         objects = models.Node.objects
 
-        node, _ = objects.get_or_create(host=_extract_host())
+        with transaction.atomic():
+            node, _ = objects.get_or_create(host=_extract_host())
         node.free = _extract_free()
         node.save()
 
@@ -69,7 +71,8 @@ class CheapCDN:
 
     def upfile(self, filename):
         name = os.path.basename(filename)
-        obj, _ = models.Object.objects.get_or_create(name=name)
+        with transaction.atomic():
+            obj, _ = models.Object.objects.get_or_create(name=name)
 
         if obj.node:
             mc = self.mc(obj.node)
