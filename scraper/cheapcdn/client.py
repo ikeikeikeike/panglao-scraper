@@ -70,6 +70,17 @@ class CheapCDN:
         return mc and mc[0]
 
     def upfile(self, filename):
+        if not self._upfile(filename):
+            return
+
+        base, _ = os.path.splitext(filename)
+
+        if not os.path.exists(f'{base}.jpg'):
+            _generate_jpg(filename)
+
+        self._upfile(f'{base}.jpg')
+
+    def _upfile(self, filename):
         name = os.path.basename(filename)
         with transaction.atomic():
             obj, _ = models.Object.objects.get_or_create(name=name)
@@ -82,7 +93,7 @@ class CheapCDN:
             obj.save()
 
         try:
-            mc.upfile(filename)
+            return mc.upfile(filename)
         except error.ResponseError as err:
             logger.error('%s with %s', err, filename)
         except AttributeError:
@@ -109,17 +120,6 @@ class Mc:
         )
 
     def upfile(self, filename):
-        if not self._upfile(filename):
-            return
-
-        base, _ = os.path.splitext(filename)
-
-        if not os.path.exists(f'{base}.jpg'):
-            _generate_jpg(filename)
-
-        self._upfile(f'{base}.jpg')
-
-    def _upfile(self, filename):
         f, size = open(filename, 'rb'), os.stat(filename).st_size
         name = os.path.basename(filename)
         mime, _ = mimetypes.guess_type(filename)  # TODO: Will be specific extractor
