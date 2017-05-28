@@ -69,6 +69,19 @@ class CheapCDN:
         mc = [mc for mc in self._mcs if mc.node.id == node.id]
         return mc and mc[0]
 
+    def rmfile(self, filename):
+        base, _ = os.path.splitext(filename)
+        self._rmfile(filename)
+        self._rmfile(f'{base}.jpg')
+
+    def _rmfile(self, filename):
+        name = os.path.basename(filename)
+        obj = models.Object.objects.get(name=name)
+
+        mc = self.mc(obj.node)
+        mc.rmfile(filename)
+        obj.delete()
+
     def upfile(self, filename):
         if not self._upfile(filename):
             return
@@ -128,6 +141,10 @@ class Mc:
                                    content_type=mime or 'video/mp4')
         os.remove(filename)  # XXX: Remove file
         return etag
+
+    def rmfile(self, filename):
+        name = os.path.basename(filename)
+        return self._mc.remove_object(self._bucket, name)
 
 
 def _generate_jpg(filename):
