@@ -19,10 +19,15 @@ def _md5(text):
     return hashlib.md5(text.encode()).hexdigest()
 
 
+def _one(result):
+    entry = result.pop('entries', [{}])[0]
+    return {**result, **entry}
+
+
 def info(url, opts=None):
     with youtube_dl.YoutubeDL(opts or {}) as ydl:
         try:
-            return ydl.extract_info(url, download=False)
+            return _one(ydl.extract_info(url, download=False))
         except youtube_dl.utils.DownloadError as err:
             logger.error('Failure Info: %s, %r', url, err)
             raise
@@ -50,11 +55,9 @@ def download(url, opts=None):
             logger.error('Failure Download: %s, %r', url, err)
             raise
 
-    outtmpl = result
-    if 'entries' in result:
-        outtmpl = result['entries'][0]
+    result = _one(result)
 
-    outfile = default_opts['outtmpl'] % outtmpl
+    outfile = default_opts['outtmpl'] % result
 
     if is_download:
         # Upload video and image
