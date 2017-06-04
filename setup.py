@@ -21,6 +21,8 @@ requirements = [
     'raven==6.0.0',
     'minio==2.2.1',
     'youtube-dl',
+
+    'ipython==5.3.0',
 ]
 
 tests_require = [
