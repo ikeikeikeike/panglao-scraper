@@ -93,6 +93,10 @@ class CheapCDN:
 
         self._upfile(f'{base}.jpg')
 
+        # XXX: Remove file
+        os.remove(filename)
+        os.remove(f'{base}.jpg')
+
     def _upfile(self, filename):
         name = os.path.basename(filename)
         with transaction.atomic():
@@ -139,7 +143,6 @@ class Mc:
 
         etag = self._mc.put_object(self._bucket, name, f, size,
                                    content_type=mime or 'video/mp4')
-        os.remove(filename)  # XXX: Remove file
         return etag
 
     def rmfile(self, filename):
