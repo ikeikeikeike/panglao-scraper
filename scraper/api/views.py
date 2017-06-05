@@ -30,6 +30,12 @@ def progress(request, encoded):
     return http.JsonResponse(store.get(key) or {})
 
 
+def findfile(request, encoded):
+    key = base64.b64decode(encoded).decode()
+    files = list(client.cheaper().findprefix(key))
+    return http.JsonResponse({'file': files})
+
+
 def removefile(request, encoded):
     key = base64.b64decode(encoded).decode()
     client.cheaper().rmfile(key)

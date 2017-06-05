@@ -69,6 +69,12 @@ class CheapCDN:
         mc = [mc for mc in self._mcs if mc.node.id == node.id]
         return mc and mc[0]
 
+    def findprefix(self, filename):
+        # XXX: make sure minio object if sometime result goes wrong below.
+        name, _ = os.path.splitext(filename)
+        q = models.Object.objects.filter(name__startswith=name)
+        return q.values_list('name', flat=True)
+
     def rmfile(self, filename):
         base, _ = os.path.splitext(filename)
         self._rmfile(filename)
