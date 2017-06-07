@@ -1,6 +1,7 @@
 import os
 import glob
 import shutil
+import string
 import random
 import mimetypes
 import subprocess
@@ -27,6 +28,7 @@ from . import models
 logger = logging.getLogger(__name__)
 
 
+_ascii = string.ascii_uppercase + string.digits
 _cheapcdn = None
 _interval = range(0, 50)
 
@@ -91,7 +93,6 @@ class CheapCDN:
     def upfile(self, filename):
         if not self._upfile(filename):
             return
-
         base, _ = os.path.splitext(filename)
 
         if not os.path.exists(f'{base}.jpg'):
@@ -156,17 +157,39 @@ class Mc:
         return self._mc.remove_object(self._bucket, name)
 
 
-def _generate_jpg(filename):
-    dest, _ = os.path.splitext(filename)
-    cmd = [
+def is_movie(filename):
+    if not filename:
+        return False
+    dest = "".join(random.choices(_ascii, k=10))
+    tmpname = f'/tmp/{dest}.jpg'
+
+    cmd = _generate_opt(filename, tmpname)
+    r = subprocess.run(cmd)
+
+    with core_error.ignore(FileNotFoundError):
+        os.remove(tmpname)
+
+    return r.returncode == 0
+
+
+def _generate_opt(src, dest):
+    return [
         'ffmpeg',
         '-ss', '60',
-        '-i', filename,
+        '-i', src,
         '-qscale:v', '0',
         '-vframes', '1',
-        f'{dest}.jpg'
+        dest
     ]
-    return subprocess.run(cmd)
+
+
+def _generate_jpg(filename):
+    dest, _ = os.path.splitext(filename)
+
+    cmd = _generate_opt(filename, f'{dest}.jpg')
+    r = subprocess.run(cmd)
+
+    return r.returncode
 
 
 def _extract_host():

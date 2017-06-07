@@ -67,7 +67,7 @@ def download(url, opts=None):
     if buf and 'filename' in buf:
         filename = buf['filename']
 
-    if is_download:
+    if is_download and client.is_movie(filename):
         # Upload video and image
         client.cheaper().upfile(filename)
 
