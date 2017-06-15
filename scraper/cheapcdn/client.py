@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 
 _ascii = string.ascii_uppercase + string.digits
 _cheapcdn = None
-_interval = range(0, 50)
+_interval = range(0, 30)
+_maxsize = 2147483648  # byte
 
 
 def cheaper():
@@ -61,8 +62,12 @@ class CheapCDN:
     def choice(self):
         mcs, weights = [], []
         for mc in self._mcs:
-            mcs.append(mc)
-            weights.append(mc.node.free)
+            if len(self._mcs) == 1:
+                mcs.append(mc)
+                weights.append(mc.node.free)
+            elif mc.node.free > _maxsize:
+                mcs.append(mc)
+                weights.append(mc.node.free)
 
         k = random.choices(mcs, weights=weights, k=1)
         return k and k[0]
