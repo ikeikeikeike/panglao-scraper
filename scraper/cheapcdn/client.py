@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 _ascii = string.ascii_uppercase + string.digits
 _cheapcdn = None
-_interval = range(0, 50)
+_interval = range(0, 30)
 _maxsize = 5368709120  # byte(5GB)
 
 
