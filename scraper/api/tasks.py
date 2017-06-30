@@ -49,7 +49,7 @@ def download(url, opts=None):
     default_opts = {
         'writethumbnail': True,
         'hls_prefer_native': True,
-        'outtmpl': '/tmp/{}.%(ext)s'.format(outfile),
+        'outtmpl': f'/tmp/%(id)s-----{outfile}.%(ext)s',
         'progress_hooks': [lambda d: store.set(outfile, d)]
     }
 
@@ -61,15 +61,16 @@ def download(url, opts=None):
             logger.error('Failure Download: %s, %r', url, err)
             raise
 
-    filename = default_opts['outtmpl'] % result
-
+    outtmpl = default_opts['outtmpl'] % result
     buf = store.get(outfile)
     if buf and 'filename' in buf:
-        filename = buf['filename']
+        outtmpl = buf['filename']
 
-    if is_download and client.is_movie(filename):
+    filename = '/tmp/{}'.format(outtmpl.split('-----')[-1])
+
+    if is_download and client.is_movie(outtmpl):
         # Upload video and image
-        client.cheaper().upfile(filename)
+        client.cheaper().upfile(filename, outtmpl)
 
     result.update({'outfile': filename})
     return result

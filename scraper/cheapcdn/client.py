@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 _ascii = string.ascii_uppercase + string.digits
 _cheapcdn = None
-_interval = range(0, 30)
+_interval = range(0, 50)
 _maxsize = 5368709120  # byte(5GB)
 
 
@@ -95,11 +95,14 @@ class CheapCDN:
         mc.rmfile(filename)
         obj.delete()
 
-    def upfile(self, filename):
+    def upfile(self, filename, outtmpl=None):
+        if outtmpl:
+            _rename(outtmpl, filename)
+
         if not self._upfile(filename):
             return
-        base, _ = os.path.splitext(filename)
 
+        base, _ = os.path.splitext(filename)
         if not os.path.exists(f'{base}.jpg'):
             _generate_jpg(filename)
 
@@ -160,6 +163,15 @@ class Mc:
     def rmfile(self, filename):
         name = os.path.basename(filename)
         return self._mc.remove_object(self._bucket, name)
+
+
+def _rename(outtmpl, filename):
+    shutil.move(outtmpl, filename)
+
+    obase, _ = os.path.splitext(outtmpl)
+    if os.path.exists(f'{obase}.jpg'):
+        fbase, _ = os.path.splitext(filename)
+        shutil.move(f'{obase}.jpg', f'{fbase}.jpg')
 
 
 def is_movie(filename):
