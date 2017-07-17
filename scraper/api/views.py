@@ -18,7 +18,12 @@ def info(request, encoded):
 
 def nodeinfo(request):
     infos = list(client.CheapCDN().nodeinfo())
-    return http.JsonResponse({'info': infos})
+    return http.JsonResponse({'root': infos})
+
+
+def abledisk(request):
+    boolean = client.CheapCDN().is_abledisk()
+    return http.JsonResponse({'root': boolean})
 
 
 def download(request, encoded):
@@ -38,7 +43,7 @@ def progress(request, encoded):
 def findfile(request, encoded):
     key = base64.b64decode(encoded).decode()
     files = list(client.CheapCDN().findprefix(key))
-    return http.JsonResponse({'file': files})
+    return http.JsonResponse({'root': files})
 
 
 def removefile(request, encoded):

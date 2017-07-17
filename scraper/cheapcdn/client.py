@@ -84,6 +84,10 @@ class CheapCDN(metaclass=state):
         q = models.Node.objects.all()
         return q.values('host', 'free', 'alive')
 
+    def is_abledisk(self):
+        ngsize = _maxsize + 1073741824
+        return any(map(lambda x: x['free'] > ngsize, self.nodeinfo()))
+
     def findprefix(self, filename):
         # XXX: make sure minio object if sometime result goes wrong below.
         name, _ = os.path.splitext(filename)
