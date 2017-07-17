@@ -16,6 +16,11 @@ def info(request, encoded):
     return http.JsonResponse(tasks.info(url))
 
 
+def nodeinfo(request):
+    infos = list(client.CheapCDN().nodeinfo())
+    return http.JsonResponse({'info': infos})
+
+
 def download(request, encoded):
     url = base64.b64decode(encoded).decode()
     outfile = str(uuid.uuid4())
@@ -28,11 +33,6 @@ def download(request, encoded):
 def progress(request, encoded):
     key = base64.b64decode(encoded).decode()
     return http.JsonResponse(store.get(key) or {})
-
-
-def nodeinfo(request):
-    infos = list(client.CheapCDN().nodeinfo())
-    return http.JsonResponse({'info': infos})
 
 
 def findfile(request, encoded):
