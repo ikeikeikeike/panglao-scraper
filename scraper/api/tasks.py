@@ -70,7 +70,7 @@ def download(url, opts=None):
 
     if is_download and client.is_movie(outtmpl):
         # Upload video and image
-        client.cheaper().upfile(filename, outtmpl)
+        client.CheapCDN().upfile(filename, outtmpl)
 
     result.update({'outfile': filename})
     return result

@@ -27,22 +27,26 @@ from . import models
 
 logger = logging.getLogger(__name__)
 
-
-_ascii = string.ascii_uppercase + string.digits
-_cheapcdn = None
-_interval = range(0, 50)
 _maxsize = 5368709120  # byte(5GB)
+_ascii = string.ascii_uppercase + string.digits
 
 
-def cheaper():
-    global _cheapcdn
-    if _cheapcdn is None or random.choice(_interval) == 0:
-        cheapcdn = CheapCDN()
+class state(type):
+    _instance = None
+    _interval = 0
 
-    return cheapcdn
+    def __call__(cls, *args, **kwargs):
+        cls._interval += 1
+
+        if cls._instance is None or cls._interval >= 5:
+            cls._instance = super(state, cls).__call__(*args, **kwargs)
+            cls._interval = 0
+
+        return cls._instance
 
 
-class CheapCDN:
+class CheapCDN(metaclass=state):
+
     def __init__(self):
         self._mcs = self.load()
 
@@ -75,6 +79,10 @@ class CheapCDN:
     def mc(self, node):
         mc = [mc for mc in self._mcs if mc.node.id == node.id]
         return mc and mc[0]
+
+    def nodeinfo(self):
+        q = models.Node.objects.all()
+        return q.values('host', 'free', 'alive')
 
     def findprefix(self, filename):
         # XXX: make sure minio object if sometime result goes wrong below.
