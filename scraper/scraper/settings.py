@@ -1,4 +1,5 @@
 import os
+import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'j!olsl1$0h!k4hqsx@7d@2iu9cgtv77+d90$insjcco7#l38a-'
@@ -166,10 +167,18 @@ LOGGING = {
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
             'tags': {'environment': ENVIRONMENT},
         },
+        'syslog': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.SysLogHandler',
+            'address': '/var/run/syslog' if sys.platform == 'darwin' else '/dev/log',
+            'formatter': 'syslog_verbose',
+            #  'filters': ['require_debug_false'],
+            #  'facility': 'local1',
+        },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
+        '': {
+            'handlers': ['syslog', 'console'],
             'level': 'DEBUG',
             'propagate': True
         },
@@ -178,20 +187,25 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-        'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'sentry.errors': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        LOGGING_PREFIX: {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
+        # 'django': {
+        #     'handlers': ['syslog', 'console'],
+        #     'level': 'DEBUG',
+        #     'propagate': True
+        # },
+        # LOGGING_PREFIX: {
+        #     'handlers': ['syslog', 'console'],
+        #     'level': 'DEBUG',
+        #     'propagate': True,
+        # },
+        # 'raven': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['sentry'],
+        #     'propagate': False,
+        # },
+        # 'sentry.errors': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['sentry'],
+        #     'propagate': False,
+        # },
     }
 }
