@@ -9,6 +9,7 @@ class Node(BaseModel):
     host = models.CharField(max_length=255)
     free = models.BigIntegerField(null=True)
     alive = models.BooleanField(default=True, db_index=True)
+    choiceable = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'nodes'

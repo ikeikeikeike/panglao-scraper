@@ -65,7 +65,7 @@ class CheapCDN(metaclass=state):
 
     def choice(self):
         mcs, weights = [], []
-        for mc in self._mcs:
+        for mc in filter(lambda x: x.node.choiceable, self._mcs):
             if len(self._mcs) == 1:
                 mcs.append(mc)
                 weights.append(mc.node.free)
@@ -82,11 +82,13 @@ class CheapCDN(metaclass=state):
 
     def nodeinfo(self):
         q = models.Node.objects.all()
-        return q.values('host', 'free', 'alive')
+        return q.values('host', 'free', 'alive', 'choiceable')
 
     def is_abledisk(self):
+        nodes = filter(lambda x: x['choiceable'], self.nodeinfo())
+
         ngsize = _maxsize + 1073741824
-        return any(map(lambda x: x['free'] > ngsize, self.nodeinfo()))
+        return any(map(lambda x: x['free'] > ngsize, nodes))
 
     def findprefix(self, filename):
         # XXX: make sure minio object if sometime result goes wrong below.
