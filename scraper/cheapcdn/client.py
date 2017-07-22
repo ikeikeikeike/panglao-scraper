@@ -87,7 +87,7 @@ class CheapCDN(metaclass=state):
     def is_abledisk(self):
         nodes = filter(lambda x: x['choiceable'], self.nodeinfo())
 
-        ngsize = _maxsize + 1073741824
+        ngsize = _maxsize + _maxsize
         return any(map(lambda x: x['free'] > ngsize, nodes))
 
     def findprefix(self, filename):
