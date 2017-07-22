@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 import hashlib
 import logging
+from urllib.parse import urlsplit
 
 from django.core.cache import caches
 
@@ -46,12 +47,12 @@ def download(url, opts=None):
     outfile = opts.pop('outfile', _md5(url))
     is_download = opts.pop('download', True)
 
-    default_opts = {
+    default_opts = {**_respond_opts(url), **{
         'writethumbnail': True,
         'hls_prefer_native': True,
         'outtmpl': f'/tmp/%(id)s-----{outfile}.%(ext)s',
         'progress_hooks': [lambda d: store.set(outfile, d)]
-    }
+    }}
 
     with youtube_dl.YoutubeDL({**opts, **default_opts}) as ydl:
         try:
@@ -62,9 +63,9 @@ def download(url, opts=None):
             raise
 
     outtmpl = default_opts['outtmpl'] % result
-    buf = store.get(outfile)
-    if buf and 'filename' in buf:
-        outtmpl = buf['filename']
+    # buf = store.get(outfile)
+    # if buf and 'filename' in buf:
+    #     outtmpl = buf['filename']
 
     filename = '/tmp/{}'.format(outtmpl.split('-----')[-1])
 
@@ -74,3 +75,11 @@ def download(url, opts=None):
 
     result.update({'outfile': filename})
     return result
+
+
+def _respond_opts(url):
+    domain = "{0.netloc}".format(urlsplit(url))
+    if 'youtube.com' in domain:
+        return {'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'}
+
+    return {}
