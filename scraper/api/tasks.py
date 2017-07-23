@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 import hashlib
 import logging
+from urllib import error as uerror
 from urllib.parse import urlsplit
 
 from django.core.cache import caches
@@ -25,6 +26,13 @@ def _one(result):
     return {**result, **entry}
 
 
+def _respond_opts(url):
+    domain = "{0.netloc}".format(urlsplit(url))
+    if 'youtube.com' in domain:
+        return {'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'}
+    return {}
+
+
 def info(url, opts=None):
     with youtube_dl.YoutubeDL(opts or {}) as ydl:
         try:
@@ -32,7 +40,11 @@ def info(url, opts=None):
         except youtube_dl.utils.DownloadError as err:
             # TODO: remove file
             logger.error('Failure Info: %s, %r', url, err)
-            raise
+
+            _, obj, _ = err.exc_info
+            if isinstance(obj, uerror.HTTPError):
+                return obj.code
+            return 0
 
 
 # TODO: count-up zero and comment in if fixed TODO below.
@@ -75,11 +87,3 @@ def download(url, opts=None):
 
     result.update({'outfile': filename})
     return result
-
-
-def _respond_opts(url):
-    domain = "{0.netloc}".format(urlsplit(url))
-    if 'youtube.com' in domain:
-        return {'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'}
-
-    return {}

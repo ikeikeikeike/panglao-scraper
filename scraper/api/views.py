@@ -13,7 +13,11 @@ store = caches['progress']
 
 def info(request, encoded):
     url = base64.b64decode(encoded).decode()
-    return http.JsonResponse(tasks.info(url))
+    root = tasks.info(url)
+
+    if isinstance(root, int):
+        return http.JsonResponse({'errno': root})
+    return http.JsonResponse({'root': root})
 
 
 def nodeinfo(request):
@@ -31,8 +35,8 @@ def download(request, encoded):
     outfile = str(uuid.uuid4())
 
     tasks.download.delay(url, opts=dict(outfile=outfile))
-    res = tasks.download(url, opts=dict(outfile=outfile, download=False))
-    return http.JsonResponse(res)
+    root = tasks.download(url, opts=dict(outfile=outfile, download=False))
+    return http.JsonResponse({'root': root})
 
 
 def progress(request, encoded):
