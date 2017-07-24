@@ -15,6 +15,8 @@ requirements = [
     'eventlet==0.20.1',
     'netifaces==0.10.5',
 
+    'plan==0.5',
+
     'celery==4.0.2',
     'gunicorn==19.6.0',
 

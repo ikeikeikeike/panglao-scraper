@@ -54,8 +54,8 @@ class CheapCDN(metaclass=state):
         objects = models.Node.objects
 
         with transaction.atomic():
-            node, _ = objects.get_or_create(host=_extract_host())
-        node.free = _extract_free()
+            node, _ = objects.get_or_create(host=extract_host())
+        node.free = extract_free()
         node.save()
 
         mcs = []
@@ -226,7 +226,7 @@ def _generate_jpg(filename):
     return r.returncode
 
 
-def _extract_host():
+def extract_host():
     """ workaround until release this
         https://github.com/minio/mc/pull/2036
     """
@@ -238,7 +238,7 @@ def _extract_host():
     return f'{host}:9091'
 
 
-def _extract_free():
+def extract_free():
     """ workaround until release
         this https://github.com/minio/mc/pull/2036
     """
