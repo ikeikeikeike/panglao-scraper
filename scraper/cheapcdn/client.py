@@ -9,13 +9,13 @@ import subprocess
 from django.conf import settings
 from django.db import transaction
 
+import netifaces as ni
+from urllib3 import exceptions as uexcepts
 from minio import (
     Minio,
     policy,
     error
 )
-
-import netifaces as ni
 
 from core import (
     logging,
@@ -60,7 +60,10 @@ class CheapCDN(metaclass=state):
 
         mcs = []
         for node in objects.filter(alive=True):
-            mcs.append(Mc(node))
+            try:
+                mcs.append(Mc(node))
+            except uexcepts.MaxRetryError:
+                pass
         return mcs
 
     def choice(self):
