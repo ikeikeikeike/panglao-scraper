@@ -100,9 +100,9 @@ class CheapCDN(metaclass=state):
         return q.values_list('name', flat=True)
 
     def rmfile(self, filename):
-        base, _ = os.path.splitext(filename)
         self._rmfile(filename)
-        self._rmfile(f'{base}.jpg')
+        for rmfile in conv.Media(filename).filenames():
+            self._rmfile(rmfile)
 
     def _rmfile(self, filename):
         name = os.path.basename(filename)
@@ -119,15 +119,14 @@ class CheapCDN(metaclass=state):
         if not self._upfile(filename):
             return
 
-        base, _ = os.path.splitext(filename)
-        if not os.path.exists(f'{base}.jpg'):
-            conv.Media(filename).conv_jpg()
+        m = conv.Media(filename)
+        m.conv_all()
 
-        self._upfile(f'{base}.jpg')
+        for upfile in m.filenames():
+            self._upfile(upfile)
 
-        # XXX: Remove file
         os.remove(filename)
-        os.remove(f'{base}.jpg')
+        m.cleanup()
 
     def _upfile(self, filename):
         name = os.path.basename(filename)

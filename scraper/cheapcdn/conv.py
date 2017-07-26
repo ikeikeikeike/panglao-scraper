@@ -45,6 +45,12 @@ def _gen_preview(src, dest):
 
 
 class Media:
+    EXTENTIONS = [
+        '.mp3',
+        '.jpg',
+        '.preview.mp4',
+    ]
+
     def __init__(self, filename):
         self._stat = os.stat(filename)
         self._filename = filename
@@ -79,22 +85,30 @@ class Media:
         dest, _ = os.path.splitext(self._filename)
 
         cmd = _gen_mp3(self._filename, f'{dest}.mp3')
-        r = subprocess.run(cmd)
-
-        return r.returncode
+        return subprocess.run(cmd).returncode
 
     def conv_jpg(self):
         dest, _ = os.path.splitext(self._filename)
 
         cmd = _gen_jpg(self._filename, f'{dest}.jpg')
-        r = subprocess.run(cmd)
+        return subprocess.run(cmd).returncode
 
-        return r.returncode
-
-    def conv_preview(self):
+    def conv_preview_mp4(self):
         dest, _ = os.path.splitext(self._filename)
 
-        cmd = _gen_preview(self._filename, f'{dest}-preview.mp4')
-        r = subprocess.run(cmd)
+        cmd = _gen_preview(self._filename, f'{dest}.preview.mp4')
+        return subprocess.run(cmd).returncode
 
-        return r.returncode
+    def conv_all(self):
+        for ext in self.EXTENTIONS:
+            getattr(self, 'conv%s' % ext.replace('.', '_'))()
+
+    def filenames(self):
+        base, _ = os.path.splitext(self._filename)
+        gene = map(lambda ext: f'{base}{ext}', self.EXTENTIONS)
+        return list(gene)
+
+    def cleanup(self):
+        for filename in self.filenames():
+            if os.path.exists(filename):
+                os.remove(filename)
