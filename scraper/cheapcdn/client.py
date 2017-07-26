@@ -1,10 +1,8 @@
 import os
 import glob
 import shutil
-import string
 import random
 import mimetypes
-import subprocess
 
 from django.conf import settings
 from django.db import transaction
@@ -22,13 +20,15 @@ from core import (
     error as core_error
 )
 
-from . import models
+from . import (
+    conv,
+    models
+)
 
 
 logger = logging.getLogger(__name__)
 
 _maxsize = 5368709120  # byte(5GB)
-_ascii = string.ascii_uppercase + string.digits
 
 
 class state(type):
@@ -121,7 +121,7 @@ class CheapCDN(metaclass=state):
 
         base, _ = os.path.splitext(filename)
         if not os.path.exists(f'{base}.jpg'):
-            _generate_jpg(filename)
+            conv.Media(filename).conv_jpg()
 
         self._upfile(f'{base}.jpg')
 
@@ -189,41 +189,6 @@ def _rename(outtmpl, filename):
     if os.path.exists(f'{obase}.jpg'):
         fbase, _ = os.path.splitext(filename)
         shutil.move(f'{obase}.jpg', f'{fbase}.jpg')
-
-
-def is_movie(filename):
-    if not filename:
-        return False
-    dest = "".join(random.choices(_ascii, k=10))
-    tmpname = f'/tmp/{dest}.jpg'
-
-    cmd = _generate_opt(filename, tmpname)
-    r = subprocess.run(cmd)
-
-    with core_error.ignore(FileNotFoundError):
-        os.remove(tmpname)
-
-    return r.returncode == 0
-
-
-def _generate_opt(src, dest):
-    return [
-        'ffmpeg',
-        '-ss', '60',
-        '-i', src,
-        '-qscale:v', '0',
-        '-vframes', '1',
-        dest
-    ]
-
-
-def _generate_jpg(filename):
-    dest, _ = os.path.splitext(filename)
-
-    cmd = _generate_opt(filename, f'{dest}.jpg')
-    r = subprocess.run(cmd)
-
-    return r.returncode
 
 
 def extract_host():

@@ -11,7 +11,10 @@ from celery import shared_task
 import youtube_dl
 
 #  from core import extractor
-from cheapcdn import client
+from cheapcdn import (
+    conv,
+    client
+)
 
 logger = logging.getLogger(__name__)
 store = caches['progress']
@@ -81,7 +84,7 @@ def download(url, opts=None):
 
     filename = '/tmp/{}'.format(outtmpl.split('-----')[-1])
 
-    if is_download and client.is_movie(outtmpl):
+    if is_download and conv.Media(outtmpl).is_movie():
         # Upload video and image
         client.CheapCDN().upfile(filename, outtmpl)
 
