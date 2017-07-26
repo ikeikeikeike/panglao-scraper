@@ -39,7 +39,7 @@ def _gen_preview(src, dest):
         '-y',
         '-ss', '30',
         '-i', src,
-        '-t', '15',
+        '-t', '10',
         dest
     ]
 
