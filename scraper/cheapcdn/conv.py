@@ -44,6 +44,7 @@ def _gen_preview(src, dest):
         '-ss', '30',
         '-i', src,
         '-t', '5',
+        '-an',
         dest
     ]
 
