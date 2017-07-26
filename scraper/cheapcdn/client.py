@@ -102,7 +102,10 @@ class CheapCDN(metaclass=state):
     def rmfile(self, filename):
         self._rmfile(filename)
         for rmfile in conv.Media(filename).filenames():
-            self._rmfile(rmfile)
+            try:
+                self._rmfile(rmfile)
+            except models.Object.DoesNotExist:
+                pass
 
     def _rmfile(self, filename):
         name = os.path.basename(filename)

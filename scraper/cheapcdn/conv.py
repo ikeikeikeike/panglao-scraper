@@ -52,7 +52,7 @@ class Media:
     ]
 
     def __init__(self, filename):
-        self._stat = os.stat(filename)
+        #  self._stat = os.stat(filename)
         self._filename = filename
 
     def is_movie(self):
