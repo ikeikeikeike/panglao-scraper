@@ -43,7 +43,7 @@ def _gen_preview(src, dest):
         '-y',
         '-ss', '30',
         '-i', src,
-        '-t', '10',
+        '-t', '5',
         dest
     ]
 
@@ -87,7 +87,7 @@ class Media:
 
     def conv_mp3(self):
         dest, _ = os.path.splitext(self._filename)
-        empty = os.path.getsize(self._filename) > 104857600  # 100MByte
+        empty = os.path.getsize(self._filename) > 524288000  # 500MByte
 
         cmd = _gen_mp3(self._filename, f'{dest}.mp3', empty)
         return subprocess.run(cmd).returncode
