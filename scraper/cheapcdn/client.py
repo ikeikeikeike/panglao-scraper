@@ -28,7 +28,7 @@ from . import (
 
 logger = logging.getLogger(__name__)
 
-_maxsize = 5368709120  # byte(5GB)
+_maxsize = 7516192768  # byte(7GB)
 
 
 class state(type):

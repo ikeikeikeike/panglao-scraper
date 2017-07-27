@@ -29,7 +29,7 @@ def _gen_jpg(src, dest):
     return [
         'ffmpeg',
         '-y',
-        '-ss', '30',
+        '-ss', '31',
         '-i', src,
         '-qscale:v', '0',
         '-vframes', '1',
