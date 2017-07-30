@@ -10,4 +10,5 @@ urlpatterns = [
     url(r"^download/(?P<encoded>.*=?)", views.download, name="download"),
     url(r"^findfile/(?P<encoded>.*=?)", views.findfile, name="findfile"),
     url(r"^removefile/(?P<encoded>.*=?)", views.removefile, name="removefile"),
+    url(r"^extractors", views.extractors, name="extractors"),
 ]

@@ -1,5 +1,6 @@
 import uuid
 import base64
+import subprocess
 
 from django import http
 from django.core.cache import caches
@@ -54,3 +55,9 @@ def removefile(request, encoded):
     key = base64.b64decode(encoded).decode()
     client.CheapCDN().rmfile(key)
     return http.JsonResponse({})
+
+
+def extractors(request):
+    cmd, PIPE = ['youtube-dl', '--list-extractors'], subprocess.PIPE
+    r = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    return http.JsonResponse({'root': str(r.stdout).strip().split('\n')})
