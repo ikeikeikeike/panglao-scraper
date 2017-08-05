@@ -29,7 +29,7 @@ def _gen_jpg(src, dest):
     return [
         'ffmpeg',
         '-y',
-        '-ss', '31',
+        '-ss', '61',
         '-i', src,
         '-qscale:v', '0',
         '-vframes', '1',
@@ -41,9 +41,9 @@ def _gen_preview(src, dest):
     return [
         'ffmpeg',
         '-y',
-        '-ss', '30',
+        '-ss', '60',
         '-i', src,
-        '-t', '10',
+        '-t', '6',
         '-an',
         dest
     ]
