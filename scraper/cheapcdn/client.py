@@ -28,7 +28,7 @@ from . import (
 
 logger = logging.getLogger(__name__)
 
-_maxsize = 7516192768  # byte(7GB)
+_maxsize = 10737418240  # byte(10GB)
 
 
 class state(type):
@@ -90,7 +90,7 @@ class CheapCDN(metaclass=state):
     def is_abledisk(self):
         nodes = filter(lambda x: x['choiceable'], self.nodeinfo())
 
-        ngsize = _maxsize * 4
+        ngsize = _maxsize * 2
         return any(map(lambda x: x['free'] > ngsize, nodes))
 
     def findprefix(self, filename):
