@@ -88,11 +88,9 @@ def download(url, opts=None):
 
     if is_download and conv.Media(outtmpl).is_movie():
         # Upload video and image
-        logger.info('Start upload: %s', url)
+        logger.error('Start upload: %s', url)
         client.CheapCDN().upfile(filename, outtmpl)
-        logger.info('Finish upload: %s', url)
+        logger.error('Finish upload: %s', url)
 
     result.update({'outfile': filename})
-
-    logger.info('Finish download: %s', url)
     return result
