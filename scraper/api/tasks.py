@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 from django.core.cache import caches
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 
 import youtube_dl
 
@@ -16,6 +17,7 @@ from cheapcdn import (
     client
 )
 
+clogger = get_task_logger(__name__)
 logger = logging.getLogger(__name__)
 store = caches['progress']
 
@@ -88,9 +90,9 @@ def download(url, opts=None):
 
     if is_download and conv.Media(outtmpl).is_movie():
         # Upload video and image
-        logger.warning('Start upload: %s', url)
+        clogger.warning('Start upload: %s', url)
         client.CheapCDN().upfile(filename, outtmpl)
-        logger.warning('Finish upload: %s', url)
+        clogger.warning('Finish upload: %s', url)
 
     result.update({'outfile': filename})
     return result
