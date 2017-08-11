@@ -42,7 +42,7 @@ def info(url, opts=None):
             return _one(ydl.extract_info(url, download=False))
         except youtube_dl.utils.DownloadError as err:
             # TODO: remove file
-            logger.error('Failure Info: %s, %r', url, err)
+            logger.error('Failure info: %s, %r', url, err)
 
             _, obj, _ = err.exc_info
             if isinstance(obj, uerror.HTTPError):
@@ -55,6 +55,8 @@ def info(url, opts=None):
 #              retry_kwargs={'max_retries': 1})
 @shared_task
 def download(url, opts=None):
+    logger.info('Start download: %s', url)
+
     opts = opts or {}
 
     # TODO: Will be fixed that opts value is missing if happened retris,
@@ -74,7 +76,7 @@ def download(url, opts=None):
             result = _one(ydl.extract_info(url, download=is_download))
         except youtube_dl.utils.DownloadError as err:
             # TODO: remove file
-            logger.error('Failure Download: %s, %r', url, err)
+            logger.error('Failure download: %s, %r', url, err)
             raise
 
     outtmpl = default_opts['outtmpl'] % result
@@ -86,7 +88,11 @@ def download(url, opts=None):
 
     if is_download and conv.Media(outtmpl).is_movie():
         # Upload video and image
+        logger.info('Start upload: %s', url)
         client.CheapCDN().upfile(filename, outtmpl)
+        logger.info('Finish upload: %s', url)
 
     result.update({'outfile': filename})
+
+    logger.info('Finish download: %s', url)
     return result
