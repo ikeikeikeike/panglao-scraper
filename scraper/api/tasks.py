@@ -1,4 +1,5 @@
 from __future__ import absolute_import, unicode_literals
+import time
 import hashlib
 import logging
 from urllib import error as uerror
@@ -7,17 +8,14 @@ from urllib.parse import urlsplit
 from django.core.cache import caches
 
 from celery import shared_task
-from celery.utils.log import get_task_logger
 
 import youtube_dl
 
-#  from core import extractor
 from cheapcdn import (
     conv,
     client
 )
 
-clogger = get_task_logger(__name__)
 logger = logging.getLogger(__name__)
 store = caches['progress']
 
@@ -53,6 +51,10 @@ def info(url, opts=None):
 
 
 # TODO: count-up zero and comment in if fixed TODO below.
+#
+# TODO: Will be fixed that opts value(outfile) is missing if happened retris,
+#       then url value converts as outfile
+#
 # @shared_task(autoretry_for=(Exception, ),
 #              retry_kwargs={'max_retries': 1})
 @shared_task
@@ -61,38 +63,61 @@ def download(url, opts=None):
 
     opts = opts or {}
 
-    # TODO: Will be fixed that opts value is missing if happened retris,
-    #       then url value converts as outfile
+    dl = opts.pop('download', True)
     outfile = opts.pop('outfile', _md5(url))
-    is_download = opts.pop('download', True)
 
-    default_opts = {**_respond_opts(url), **{
+    dlopts = {**_respond_opts(url), **{
         'writethumbnail': True,
         'hls_prefer_native': True,
         'outtmpl': f'/tmp/%(id)s-----{outfile}.%(ext)s',
         'progress_hooks': [lambda d: store.set(outfile, d)]
+        #  'progress_hooks': [lambda d: store.set(outfile, d); raise]
     }}
 
-    with youtube_dl.YoutubeDL({**opts, **default_opts}) as ydl:
-        try:
-            result = _one(ydl.extract_info(url, download=is_download))
-        except youtube_dl.utils.DownloadError as err:
-            # TODO: remove file
-            logger.error('Failure download: %s, %r', url, err)
-            raise
+    with youtube_dl.YoutubeDL({**opts, **dlopts}) as ydl:
+        result = retry_manually(ydl, url, dl, outfile)
 
-    outtmpl = default_opts['outtmpl'] % result
+    outtmpl = dlopts['outtmpl'] % result
     # buf = store.get(outfile)
     # if buf and 'filename' in buf:
     #     outtmpl = buf['filename']
 
     filename = '/tmp/{}'.format(outtmpl.split('-----')[-1])
 
-    if is_download and conv.Media(outtmpl).is_movie():
+    if dl and conv.Media(outtmpl).is_movie():
         # Upload video and image
-        clogger.warning('Start upload: %s', url)
+        logger.info('Start upload: %s', url)
         client.CheapCDN().upfile(filename, outtmpl)
-        clogger.warning('Finish upload: %s', url)
+        logger.info('Finish upload: %s', url)
 
     result.update({'outfile': filename})
     return result
+
+
+def retry_manually(ydl, url, dl, outfile, retry=1):
+    try:
+        return _one(ydl.extract_info(url, download=dl))
+    except youtube_dl.utils.DownloadError as err:  # except Exception as err:
+        # TODO: remove file
+        #
+        logger.warning('retry=%d failure download: %s, %r', retry, url, err)
+        if retry >= 3:
+            _crap = {
+                '_eta_str': '--:--:--',
+                '_percent_str': '  0.0%',
+                '_speed_str': 'Unknown speed',
+                '_total_bytes_estimate_str': '0GiB',
+                'downloaded_bytes': 0,
+                'elapsed': 0,
+                'eta': 0,
+                'filename': 'mp4',
+                'speed': 0,
+                'status': 'crap',
+                'tmpfilename': 'mp4.part',
+                'total_bytes_estimate': 0
+            }
+            store.set(outfile, _crap)
+            raise
+
+        time.sleep(10)
+        return retry_manually(ydl, url, download, outfile, retry + 1)
