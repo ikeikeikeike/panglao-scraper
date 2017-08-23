@@ -101,7 +101,7 @@ def retry_manually(ydl, url, dl, outfile, retry=1):
         # TODO: remove file
         #
         logger.warning('retry=%d failure download: %s, %r', retry, url, err)
-        if retry >= 3:
+        if retry >= 5:
             _crap = {
                 '_eta_str': '--:--:--',
                 '_percent_str': '  0.0%',
@@ -119,5 +119,5 @@ def retry_manually(ydl, url, dl, outfile, retry=1):
             store.set(outfile, _crap)
             raise
 
-        time.sleep(10)
+        time.sleep(30)
         return retry_manually(ydl, url, download, outfile, retry + 1)
