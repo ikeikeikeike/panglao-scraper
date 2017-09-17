@@ -1,4 +1,5 @@
 import os
+import urllib
 import mimetypes
 
 from django.conf import settings
@@ -12,9 +13,9 @@ from minio import (
 from core import error as core_error
 
 
-def _client(host=None):
+def _client(host):
     return Minio(
-        host,
+        urllib.parse.urlparse(host).netloc,
         access_key=settings.MINIO_ACCESS_KEY,
         secret_key=settings.MINIO_SECRET_KEY,
         secure=False

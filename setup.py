@@ -16,6 +16,7 @@ requirements = [
     'netifaces==0.10.5',
 
     'plan==0.5',
+    'tldextract==2.1.0',
 
     'celery==4.0.2',
     'gunicorn==19.6.0',

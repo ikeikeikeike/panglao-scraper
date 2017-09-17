@@ -161,7 +161,7 @@ def extract_host():
     except ValueError:
         host = '127.0.0.1'
 
-    return f'{host}:9091'
+    return f'http://{host}:9091'
 
 
 def extract_free():
