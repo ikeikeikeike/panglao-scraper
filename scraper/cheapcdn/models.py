@@ -10,6 +10,7 @@ class Node(BaseModel):
     free = models.BigIntegerField(null=True)
     alive = models.BooleanField(default=True, db_index=True)
     choiceable = models.BooleanField(default=True)
+    provider = models.SlugField(default='minio')
 
     class Meta:
         db_table = 'nodes'

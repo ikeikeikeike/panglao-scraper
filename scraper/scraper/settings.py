@@ -109,6 +109,10 @@ MINIO_BUCKET = ''
 MINIO_ACCESS_KEY = ''
 MINIO_SECRET_KEY = ''
 
+DO_BUCKET = ''
+DO_ACCESS_KEY = ''
+DO_SECRET_KEY = ''
+
 # logging
 LOGGING_PREFIX = 'scraper'
 LOGGING = {

@@ -2,27 +2,19 @@ import os
 import glob
 import shutil
 import random
-import mimetypes
 
-from django.conf import settings
 from django.db import transaction
 
 import netifaces as ni
 from urllib3 import exceptions as uexcepts
-from minio import (
-    Minio,
-    policy,
-    error
-)
+from minio import error
 
-from core import (
-    logging,
-    error as core_error
-)
+from core import logging
 
 from . import (
     conv,
-    models
+    models,
+    adapter
 )
 
 
@@ -38,7 +30,7 @@ class state(type):
     def __call__(cls, *args, **kwargs):
         cls._interval += 1
 
-        if cls._instance is None or cls._interval >= 20:
+        if cls._instance is None or cls._interval >= 50:
             cls._instance = super(state, cls).__call__(*args, **kwargs)
             cls._interval = 0
 
@@ -61,7 +53,7 @@ class CheapCDN(metaclass=state):
         mcs = []
         for node in objects.filter(alive=True):
             try:
-                mcs.append(Mc(node))
+                mcs.append(adapter.get_client(node))
             except uexcepts.MaxRetryError:
                 pass
         return mcs
@@ -151,39 +143,6 @@ class CheapCDN(metaclass=state):
             logger.error('mc is nothing with %s', filename)
 
 
-class Mc:
-    def __init__(self, node, bucket=None):
-        self.node = node
-        self._mc = _minio_client(node.host)
-        self._bucket = bucket or settings.MINIO_BUCKET
-
-        self.prepare_bucket()
-
-    def prepare_bucket(self):
-        if self._mc.bucket_exists(self._bucket):
-            return
-
-        with core_error.ignore(error.ResponseError):
-            self._mc.make_bucket(self._bucket)
-
-        self._mc.set_bucket_policy(
-            self._bucket, '*', policy.Policy.READ_ONLY
-        )
-
-    def upfile(self, filename):
-        f, size = open(filename, 'rb'), os.stat(filename).st_size
-        name = os.path.basename(filename)
-        mime, _ = mimetypes.guess_type(filename)  # TODO: Will be specific extractor
-
-        etag = self._mc.put_object(self._bucket, name, f, size,
-                                   content_type=mime or 'video/mp4')
-        return etag
-
-    def rmfile(self, filename):
-        name = os.path.basename(filename)
-        return self._mc.remove_object(self._bucket, name)
-
-
 def _rename(outtmpl, filename):
     shutil.move(outtmpl, filename)
 
@@ -216,12 +175,3 @@ def extract_free():
         return shutil.disk_usage(mnt).free
     except (FileNotFoundError, TypeError):
         return 1024
-
-
-def _minio_client(host=None):
-    return Minio(
-        host,
-        access_key=settings.MINIO_ACCESS_KEY,
-        secret_key=settings.MINIO_SECRET_KEY,
-        secure=False
-    )
