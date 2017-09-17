@@ -56,6 +56,7 @@ class DO:
         mime, _ = mimetypes.guess_type(filename)  # TODO: Will be specific extractor
 
         etag = self._mc.put_object(
+            ACL='public-read',
             Key=os.path.basename(filename),
             Body=open(filename, 'rb'),
             Bucket=self._bucket,
