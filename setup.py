@@ -17,6 +17,7 @@ requirements = [
 
     'plan==0.5',
     'tldextract==2.1.0',
+    'boto3==1.4.7',
 
     'celery==4.0.2',
     'gunicorn==19.6.0',

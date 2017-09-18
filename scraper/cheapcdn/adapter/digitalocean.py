@@ -1,4 +1,6 @@
 import os
+import time
+import logging
 import mimetypes
 
 from django.conf import settings
@@ -8,6 +10,8 @@ import botocore
 import tldextract
 
 from core import error as core_error
+
+logger = logging.getLogger(__name__)
 
 _maxsize = 1099511627776  # 1TB
 
@@ -47,7 +51,7 @@ class DO:
     def prepare_bucket(self):
         if not self.exists_bucket(self._bucket):
             with core_error.ignore(Exception):
-                self._mc.create_bucket(Bucket=self._bucket, ACL='public-read')
+                self._mc.create_bucket(Bucket=self._bucket)
 
         self.node.free = _maxsize - self.bucket_size(self._bucket)
         self.node.save()
@@ -55,16 +59,30 @@ class DO:
     def upfile(self, filename):
         mime, _ = mimetypes.guess_type(filename)  # TODO: Will be specific extractor
 
-        etag = self._mc.put_object(
-            ACL='public-read',
-            Key=os.path.basename(filename),
-            Body=open(filename, 'rb'),
-            Bucket=self._bucket,
-            ContentLength=os.stat(filename).st_size,
-            ContentType=mime or 'video/mp4'
-        )
+        def fun():
+            return self._mc.put_object(
+                ACL='public-read',
+                Key=os.path.basename(filename),
+                Body=open(filename, 'rb'),
+                Bucket=self._bucket,
+                ContentLength=os.stat(filename).st_size,
+                ContentType=mime or 'video/mp4'
+            )
+        etag = retry_manually(fun)
         return etag
 
     def rmfile(self, filename):
         key = os.path.basename(filename)
         return self._mc.delete_object(Bucket=self._bucket, Key=key)
+
+
+def retry_manually(fun, retry=1):
+    try:
+        return fun()
+    except botocore.exceptions.ClientError as err:
+        logger.warning('retry=%d upfile: %r', retry, err)
+        if retry >= 5:
+            raise
+
+        time.sleep(5)
+        return retry_manually(fun, retry + 1)
