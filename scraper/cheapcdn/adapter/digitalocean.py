@@ -45,7 +45,7 @@ class DO:
         return True
 
     def bucket_size(self, bucket):
-        r = self._mc.list_objects_v2(Bucket=bucket)
+        r = self._mc.list_objects_v2(Bucket=bucket, MaxKeys=999999)
         return sum(i['Size'] for i in r.get('Contents', [])) or 0
 
     def prepare_bucket(self):
