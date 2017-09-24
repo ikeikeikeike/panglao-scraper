@@ -81,7 +81,8 @@ def retry_manually(fun, retry=1):
         return fun()
     except botocore.exceptions.ClientError as err:
         logger.warning('retry=%d upfile: %r', retry, err)
-        if retry >= 5:
+        if retry >= 10:
+            logger.error('upfile came max retries: %r', err)
             raise
 
         time.sleep(5)
