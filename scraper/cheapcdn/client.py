@@ -30,7 +30,7 @@ class state(type):
     def __call__(cls, *args, **kwargs):
         cls._interval += 1
 
-        if cls._instance is None or cls._interval >= 20:
+        if cls._instance is None or cls._interval >= 50:
             cls._instance = super(state, cls).__call__(*args, **kwargs)
             cls._interval = 0
 
