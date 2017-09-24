@@ -18,11 +18,9 @@ logger = logging.getLogger(__name__)
 _timeago = 2.5  # period time of deletion
 _maxsize = 1099511627776  # 1TB
 
-session = boto3.session.Session()
-
 
 def _client(host):
-    return session.client(
+    return boto3.session.Session().client(
         's3',
         region_name=tldextract.extract(host).subdomain,
         endpoint_url=host,
