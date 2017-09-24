@@ -30,7 +30,21 @@ def _client(host):
     )
 
 
-class DO:
+class state(type):
+    _instance = None
+    _interval = 0
+
+    def __call__(cls, *args, **kwargs):
+        cls._interval += 1
+
+        if cls._instance is None or cls._interval >= 10:
+            cls._instance = super(state, cls).__call__(*args, **kwargs)
+            cls._interval = 0
+
+        return cls._instance
+
+
+class DO(metaclass=state):
     def __init__(self, node, bucket=None):
         self.node = node
         self._mc = _client(node.host)
