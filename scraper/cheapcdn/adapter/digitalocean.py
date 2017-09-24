@@ -2,8 +2,10 @@ import os
 import time
 import logging
 import mimetypes
+from datetime import timedelta
 
 from django.conf import settings
+from django.utils import timezone
 
 import boto3
 import botocore
@@ -13,6 +15,7 @@ from core import error as core_error
 
 logger = logging.getLogger(__name__)
 
+_timeago = 2.5  # period time of deletion
 _maxsize = 1099511627776  # 1TB
 
 session = boto3.session.Session()
@@ -44,16 +47,29 @@ class DO:
             return False
         return True
 
+    # now unuse this method
     def bucket_size(self, bucket):
         r = self._mc.list_objects_v2(Bucket=bucket, MaxKeys=999999)
         return sum(i['Size'] for i in r.get('Contents', [])) or 0
 
     def prepare_bucket(self):
+        # make bucket
         if not self.exists_bucket(self._bucket):
             with core_error.ignore(Exception):
                 self._mc.create_bucket(Bucket=self._bucket)
 
-        self.node.free = _maxsize - self.bucket_size(self._bucket)
+        # calclate bucket size and delete old objects
+        usedsize = 0
+        timeago = timezone.now() - timedelta(days=_timeago)
+
+        r = self._mc.list_objects_v2(Bucket=self._bucket, MaxKeys=999999)
+        for i in r.get('Contents', []):
+            if i['LastModified'] < timeago:
+                self._mc.delete_object(Bucket=self._bucket, Key=i['Key'])
+            else:
+                usedsize += i['Size']
+
+        self.node.free = _maxsize - usedsize
         self.node.save()
 
     def upfile(self, filename):
