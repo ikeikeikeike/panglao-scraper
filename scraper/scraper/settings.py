@@ -113,6 +113,10 @@ DO_BUCKET = ''
 DO_ACCESS_KEY = ''
 DO_SECRET_KEY = ''
 
+DO_TOKEN = ''
+DO_SSH_KEYS = ''
+DO_OBJECT_IMAGE = ''
+
 # logging
 LOGGING_PREFIX = 'scraper'
 LOGGING = {

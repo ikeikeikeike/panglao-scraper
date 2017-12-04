@@ -6,10 +6,12 @@ from core.models import BaseModel
 
 
 class Node(BaseModel):
+    #  name = models.CharField(max_length=255, null=True, unique=True)
     host = models.CharField(max_length=255)
     free = models.BigIntegerField(null=True)
     alive = models.BooleanField(default=True, db_index=True)
     choiceable = models.BooleanField(default=True)
+    #  sweepable = models.BooleanField(default=True)
     provider = models.SlugField(default='minio')
 
     class Meta:

@@ -27,6 +27,8 @@ requirements = [
     'youtube-dl',
 
     'ipython==5.3.0',
+
+    'python-digitalocean==1.12',
 ]
 
 tests_require = [

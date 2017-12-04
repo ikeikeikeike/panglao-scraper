@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     url(r"^info/(?P<encoded>.*=?)", views.info, name="info"),
+    url(r"^stream/(?P<encoded>.*=?)", views.stream, name="stream"),
     url(r"^nodeinfo", views.nodeinfo, name="nodeinfo"),
     url(r"^abledisk", views.abledisk, name="abledisk"),
     url(r"^progress/(?P<encoded>.*=?)", views.progress, name="progress"),
