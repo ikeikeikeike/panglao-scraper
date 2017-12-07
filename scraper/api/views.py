@@ -3,16 +3,20 @@ import uuid
 import base64
 import urllib.parse
 import subprocess
-from subprocess import PIPE
 
 from django import http
+from django.conf import settings
 from django.core.cache import caches
 
 from cheapcdn import client
 
+from core import stream as core_stream
+
 from . import tasks
 
-FNULL = open(os.devnull, 'w')
+
+FNULL = None if settings.DEBUG else open(os.devnull, 'w')
+PIPE = subprocess.PIPE
 
 store = caches['progress']
 
@@ -29,19 +33,12 @@ def info(request, encoded):
 def stream(request, encoded):
     url = base64.b64decode(encoded).decode()
 
-    youtube = subprocess.Popen(
-        f"youtube-dl '{url}' --hls-prefer-native -o -",
-        shell=True, stdout=PIPE, stderr=FNULL
-    )
-    ffmpeg = subprocess.Popen(
-        ("ffmpeg -i pipe:0 -crf 25 -preset faster "
-         "-f mp4 -movflags frag_keyframe+empty_moov pipe:1"),
-        shell=True, stdin=youtube.stdout, stdout=PIPE, stderr=FNULL
-    )
+    ex = core_stream.Exchanger(url)
+    streaming = ex.exchange()
 
     filename = urllib.parse.quote(str(uuid.uuid4()))
 
-    r = http.FileResponse(ffmpeg.stdout, content_type="video/mp4")
+    r = http.FileResponse(streaming.stdout, content_type="video/mp4")
     r['Content-Disposition'] = f'attachment; filename="{filename}.mp4"'
     return r
 
