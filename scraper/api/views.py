@@ -34,10 +34,9 @@ def stream(request, encoded):
     url = base64.b64decode(encoded).decode()
 
     ex = core_stream.Exchanger(url)
-    streaming = ex.exchange()
+    streaming = ex.exchange(**request.GET.dict())
 
     filename = urllib.parse.quote(str(uuid.uuid4()))
-
     r = http.FileResponse(streaming.stdout, content_type="video/mp4")
     r['Content-Disposition'] = f'attachment; filename="{filename}.mp4"'
     return r

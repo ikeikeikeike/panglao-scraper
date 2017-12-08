@@ -4,49 +4,13 @@ import string
 import subprocess
 
 
-from core import error as core_error
+from core import (
+    conv,
+    error as core_error
+)
 
 
 _ascii = string.ascii_uppercase + string.digits
-
-
-def _gen_mp3(src, dest, empty=False):
-    cmd = [
-        'ffmpeg',
-        '-y',
-        '-i', src,
-        '-codec:a', 'libmp3lame',
-        '-qscale:a', '2',
-        dest
-    ]
-    if empty:
-        cmd.insert(4, '-t')
-        cmd.insert(5, '1')
-    return cmd
-
-
-def _gen_jpg(src, dest):
-    return [
-        'ffmpeg',
-        '-y',
-        '-ss', '61',
-        '-i', src,
-        '-qscale:v', '0',
-        '-vframes', '1',
-        dest
-    ]
-
-
-def _gen_preview(src, dest):
-    return [
-        'ffmpeg',
-        '-y',
-        '-ss', '60',
-        '-i', src,
-        '-t', '6',
-        '-an',
-        dest
-    ]
 
 
 class Media:
@@ -66,7 +30,7 @@ class Media:
         dest = "".join(random.choices(_ascii, k=10))
         tmpname = f'/tmp/{dest}.jpg'
 
-        cmd = _gen_jpg(self._filename, tmpname)
+        cmd = conv.gen_jpg(self._filename, tmpname)
         r = subprocess.run(cmd)
 
         with core_error.ignore(FileNotFoundError):
@@ -79,7 +43,7 @@ class Media:
     #     dest = "".join(random.choices(_ascii, k=10))
     #     tmpname = f'/tmp/{dest}.mp3'
 
-    #     cmd = _gen_mp3(self._filename, tmpname, {'s': 10, 't': 10})
+    #     cmd = conv.gen_mp3(self._filename, tmpname, {'s': 10, 't': 10})
     #     r = subprocess.run(cmd)
 
     #     with core_error.ignore(FileNotFoundError):
@@ -90,19 +54,19 @@ class Media:
         dest, _ = os.path.splitext(self._filename)
         empty = os.path.getsize(self._filename) > 524288000  # 500MByte
 
-        cmd = _gen_mp3(self._filename, f'{dest}.mp3', empty)
+        cmd = conv.gen_mp3(self._filename, f'{dest}.mp3', empty)
         return subprocess.run(cmd).returncode
 
     def conv_jpg(self):
         dest, _ = os.path.splitext(self._filename)
 
-        cmd = _gen_jpg(self._filename, f'{dest}.jpg')
+        cmd = conv.gen_jpg(self._filename, f'{dest}.jpg')
         return subprocess.run(cmd).returncode
 
     def conv_preview_mp4(self):
         dest, _ = os.path.splitext(self._filename)
 
-        cmd = _gen_preview(self._filename, f'{dest}.preview.mp4')
+        cmd = conv.gen_preview(self._filename, f'{dest}.preview.mp4')
         return subprocess.run(cmd).returncode
 
     def conv_all(self):
