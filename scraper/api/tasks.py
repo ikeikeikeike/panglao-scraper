@@ -5,6 +5,7 @@ import logging
 from urllib import error as uerror
 from urllib.parse import urlsplit
 
+from django.conf import settings
 from django.core.cache import caches
 
 from celery import shared_task
@@ -33,11 +34,16 @@ def _respond_opts(url):
     domain = "{0.netloc}".format(urlsplit(url))
     if 'youtube.com' in domain:
         return {'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'}
+    elif 'nicovideo.jp' in domain:
+        return {'username': settings.NICO_USER,
+                'password': settings.NICO_PASS}
     return {}
 
 
 def info(url, opts=None):
-    with youtube_dl.YoutubeDL(opts or {}) as ydl:
+    opts = {**_respond_opts(url), **(opts or {})}
+
+    with youtube_dl.YoutubeDL(opts) as ydl:
         try:
             return _one(ydl.extract_info(url, download=False))
         except youtube_dl.utils.DownloadError as err:

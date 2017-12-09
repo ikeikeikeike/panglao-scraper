@@ -117,6 +117,9 @@ DO_TOKEN = ''
 DO_SSH_KEYS = ''
 DO_OBJECT_IMAGE = ''
 
+NICO_USER = ''
+NICO_PASS = ''
+
 # logging
 LOGGING_PREFIX = 'scraper'
 LOGGING = {

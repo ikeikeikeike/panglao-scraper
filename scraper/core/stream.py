@@ -1,5 +1,6 @@
 import os
 import subprocess
+from urllib.parse import urlsplit
 
 from django.conf import settings
 
@@ -30,26 +31,39 @@ class Exchanger:
         elif ext in self.video_exts:
             return self._mp4(format)
 
-        return self._mp4()
+        return self._mp4(format)
+
+    def _gen_youtube(self, format):
+        domain = "{0.netloc}".format(urlsplit(self.url))
+
+        cmd = (f"youtube-dl '{self.url}' -f {format}"
+                ' --hls-prefer-native -o -")
+
+        if 'nicovideo.jp' in domain:
+            return (f'{cmd}'
+                    f' -u {settings.NICO_USER}'
+                    f' -p {settings.NICO_PASS}')
+
+        return cmd
 
     def _mp3(self, format):
         youtube = subprocess.Popen(
-            f"youtube-dl '{self.url}' -f {format} -o -",
+            self._gen_youtube(format),
             shell=True, stdout=PIPE, stderr=None
         )
 
         return subprocess.Popen(
-            conv.gen_mp3(), shell=True,
+            ' '.join(conv.gen_mp3()), shell=True,
             stdin=youtube.stdout, stdout=PIPE, stderr=None
         )
 
     def _mp4(self, format):
         youtube = subprocess.Popen(
-            f"youtube-dl '{self.url}' -f {format} --hls-prefer-native -o -",
+            self._gen_youtube(format),
             shell=True, stdout=PIPE, stderr=None
         )
 
         return subprocess.Popen(
-            conv.gen_mp4(), shell=True,
+            ' '.join(conv.gen_mp4()), shell=True,
             stdin=youtube.stdout, stdout=PIPE, stderr=None
         )
