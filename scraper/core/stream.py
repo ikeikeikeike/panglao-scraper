@@ -37,12 +37,12 @@ class Exchanger:
         domain = "{0.netloc}".format(urlsplit(self.url))
 
         cmd = (f"youtube-dl '{self.url}' -f {format}"
-                ' --hls-prefer-native -o -")
+               f" --hls-prefer-native -o -")
 
         if 'nicovideo.jp' in domain:
-            return (f'{cmd}'
-                    f' -u {settings.NICO_USER}'
-                    f' -p {settings.NICO_PASS}')
+            return (f"{cmd}"
+                    f" -u {settings.NICO_USER}"
+                    f" -p {settings.NICO_PASS}")
 
         return cmd
 
