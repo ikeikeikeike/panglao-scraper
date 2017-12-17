@@ -22,21 +22,41 @@ class Exchanger:
         'mp4', 'webm', '3gp'
     ]
 
-    def __init__(self, url):
+    def __init__(self, url, format, ext=None, **kwargs):
         self.url = url
 
-    def exchange(self, ext=None, format=None, **kwargs):
-        if ext in self.audio_exts:
-            return self._mp3(format)
-        elif ext in self.video_exts:
-            return self._mp4(format)
+        self._format = format
+        self._ext = ext
+        self._options = kwargs
 
-        return self._mp4(format)
+    def exchange(self):
+        if self._ext in self.audio_exts:
+            return self._mp3()
+        elif self._ext in self.video_exts:
+            return self._mp4()
 
-    def _gen_youtube(self, format):
+        return self._mp4()
+
+    def extension(self):
+        if self._ext in self.audio_exts:
+            return 'mp3'
+        elif self._ext in self.video_exts:
+            return 'mp4'
+
+        return 'mp4'
+
+    def mimetype(self):
+        if self._ext in self.audio_exts:
+            return 'audio/mp3'
+        elif self._ext in self.video_exts:
+            return 'video/mp4'
+
+        return 'video/mp4'
+
+    def _gen_youtube(self):
         domain = "{0.netloc}".format(urlsplit(self.url))
 
-        cmd = (f"youtube-dl '{self.url}' -f {format}"
+        cmd = (f"youtube-dl '{self.url}' -f {self._format}"
                f" --hls-prefer-native -o -")
 
         if 'nicovideo.jp' in domain:
@@ -46,9 +66,9 @@ class Exchanger:
 
         return cmd
 
-    def _mp3(self, format):
+    def _mp3(self):
         youtube = subprocess.Popen(
-            self._gen_youtube(format),
+            self._gen_youtube(),
             shell=True, stdout=PIPE, stderr=None
         )
 
@@ -57,9 +77,9 @@ class Exchanger:
             stdin=youtube.stdout, stdout=PIPE, stderr=None
         )
 
-    def _mp4(self, format):
+    def _mp4(self):
         youtube = subprocess.Popen(
-            self._gen_youtube(format),
+            self._gen_youtube(),
             shell=True, stdout=PIPE, stderr=None
         )
 

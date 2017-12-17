@@ -33,12 +33,14 @@ def info(request, encoded):
 def stream(request, encoded):
     url = base64.b64decode(encoded).decode()
 
-    ex = core_stream.Exchanger(url)
-    streaming = ex.exchange(**request.GET.dict())
+    ex = core_stream.Exchanger(url, **request.GET.dict())
+    streaming = ex.exchange()
+    mime = ex.mimetype()
+    ext = ex.extension()
 
     filename = urllib.parse.quote(str(uuid.uuid4()))
-    r = http.FileResponse(streaming.stdout, content_type="video/mp4")
-    r['Content-Disposition'] = f'attachment; filename="{filename}.mp4"'
+    r = http.FileResponse(streaming.stdout, content_type=f"{mime}")
+    r['Content-Disposition'] = f'attachment; filename="{filename}.{ext}"'
     return r
 
 
