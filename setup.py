@@ -12,6 +12,7 @@ requirements = [
     'requests==2.13.0',
 
     'gevent==1.2.1',
+    'meinheld==0.6.1',
     'eventlet==0.21.0',
     'netifaces==0.10.5',
 
