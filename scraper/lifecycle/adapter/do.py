@@ -113,7 +113,6 @@ class Lifecycle:
         self.sweep()
 
         srvs = self.servers()
-        for _ in range(0, self.keep - len(srvs)):
-            self.resurrect()
+        self.resurrect(self.keep - len(srvs))
 
         self.mark()
