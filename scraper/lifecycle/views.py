@@ -15,12 +15,12 @@ def alives(request):
 
     root = []
     for worker in qs:
-        args = [request.scheme, worker.host, request.get_port()]
+        args = [request.scheme, worker.host]
 
         root.append({
             'name': worker.name, 'host': worker.host,
-            'info': '{}://{}:{}{}'.format(*(args + [info_path])),
-            'stream': '{}://{}:{}{}'.format(*(args + [stream_path])),
+            'info': '{}://{}{}'.format(*(args + [info_path])),
+            'stream': '{}://{}{}'.format(*(args + [stream_path])),
         })
 
     return http.JsonResponse({'root': root})
