@@ -86,12 +86,12 @@ class Lifecycle:
         for d in self.servers():
             check = [m for m in marked if d.name == m.name]
             if any(check):
-                servers.append(d, check)
+                servers.append((d, check))
                 continue
 
             check = [m for m in marked if d.private_ip_address in m.host]
             if any(check):
-                servers.append(d, check)
+                servers.append((d, check))
                 continue
 
         return servers
