@@ -27,7 +27,7 @@ requirements = [
     'minio==2.2.1',
     'youtube-dl',
 
-    'ipython==5.3.0',
+    'ipython==6.2.1',
 
     'python-digitalocean==1.12',
 ]

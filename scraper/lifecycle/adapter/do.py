@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class Lifecycle:
     """ Manage mark and sweep to servers using digitalocean """
     name = 'camotes-scraper'
+    keep = 4
 
     def __init__(self, token=None):
         self.token = token or settings.DO_TOKEN
@@ -110,5 +111,9 @@ class Lifecycle:
 
     def samsara(self):
         self.sweep()
-        self.resurrect()
+
+        srvs = self.servers()
+        for _ in range(0, self.keep - len(srvs)):
+            self.resurrect()
+
         self.mark()
