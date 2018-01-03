@@ -4,7 +4,7 @@ import digitalocean as api
 
 from core import logging
 
-from . import models
+from lifecycle import models
 
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Lifecycle:
     """ Manage mark and sweep to servers using digitalocean """
-    name = 'object'
+    name = 'camotes-scraper'
 
     def __init__(self, token=None):
         self.token = token or settings.DO_TOKEN
@@ -50,7 +50,7 @@ class Lifecycle:
             server = api.Droplet(
                 token=self.token,
                 name=f"{self.name}{version}",
-                region='sgp1',
+                region='ams3',
                 size='512mb',
                 private_networking=True,
                 ipv6=True,
@@ -65,20 +65,21 @@ class Lifecycle:
                 tag.add_droplets([str(server.id)])
 
             result.append((server, r))
+            version = version + 1
 
         return result
 
     def mark(self):
-        qs = models.Node.objects
-        node = qs.filter(usable=True).order_by('id').first()
-        if not node:
+        qs = models.Worker.objects
+        wk = qs.filter(usable=True).order_by('id').first()
+        if not wk:
             return
 
-        node.usable = False
-        node.save()
+        wk.usable = False
+        wk.save()
 
     def marked_servers(self):
-        qs = models.Node.objects
+        qs = models.Worker.objects
         qs = qs.filter(usable=False).all()
 
         servers, marked = [], list(qs)
