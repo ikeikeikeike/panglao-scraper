@@ -20,7 +20,6 @@ INSTALLED_APPS = [
 
     'core',
     'api',
-    'lifecycle',
     'cheapcdn',
 ]
 
