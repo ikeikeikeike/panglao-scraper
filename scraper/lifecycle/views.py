@@ -1,5 +1,4 @@
 from django import http
-from django.conf import settings
 from django.urls import reverse_lazy
 from django.views import decorators
 
@@ -8,7 +7,6 @@ from . import models
 
 info_path = reverse_lazy('api:info', args=[''])
 stream_path = reverse_lazy('api:stream', args=[''])
-port = 8000 if settings.ENVIRONMENT == 'local' else 80
 
 
 @decorators.cache.cache_page(60)
@@ -17,7 +15,7 @@ def alives(request):
 
     root = []
     for worker in qs:
-        args = [request.scheme, worker.host, port]
+        args = [request.scheme, worker.host, request.get_port()]
 
         root.append({
             'name': worker.name, 'host': worker.host,
