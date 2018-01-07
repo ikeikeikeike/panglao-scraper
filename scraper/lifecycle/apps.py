@@ -1,12 +1,10 @@
-import socket
-
 import django
 from django.apps import AppConfig
 from django.db import transaction
 
-import netifaces as ni
-
 from core import logging
+
+from . import base
 
 
 logger = logging.getLogger(__name__)
@@ -17,6 +15,8 @@ class LifecycleConfig(AppConfig):
     verbose_name = "Lifecycle"
 
     def ready(self):
+        from lifecycle import signals  # NOQA
+
         try:
             self._load_worker()
         except (
@@ -29,14 +29,8 @@ class LifecycleConfig(AppConfig):
         objs = self.get_model('worker').objects
 
         with transaction.atomic():
-            w, _ = objs.get_or_create(host=extract_host())
+            w, _ = objs.get_or_create(host=base.host)
 
-        w.name = socket.getfqdn()
+        w.name = base.fqdn
+        w.busy = False
         w.save()
-
-
-def extract_host():
-    try:
-        return ni.ifaddresses('eth1')[2][0]['addr']
-    except ValueError:
-        return '127.0.0.1'

@@ -13,7 +13,7 @@ port = 8000 if settings.ENVIRONMENT == 'local' else 80
 
 @decorators.cache.cache_page(60)
 def alives(request):
-    qs = models.Worker.objects.filter(usable=True).all()
+    qs = models.Worker.workers.alives().all()
 
     root = []
     for worker in qs:
