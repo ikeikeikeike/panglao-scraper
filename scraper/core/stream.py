@@ -56,8 +56,8 @@ class Exchanger:
     def _gen_youtube(self):
         domain = "{0.netloc}".format(urlsplit(self.url))
 
-        cmd = (f"youtube-dl '{self.url}' -f {self._format}"
-               f" --hls-prefer-native -o -")
+        cmd = (f"youtube-dl '{self.url}' -f {self._format} --retries infinite"
+               f" --fragment-retries infinite --hls-prefer-native -o -")
 
         if 'nicovideo.jp' in domain:
             return (f"{cmd}"
