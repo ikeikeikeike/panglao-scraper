@@ -16,7 +16,7 @@ class Lifecycle:
 
     def __init__(self, token=None, keep=None):
         self.token = token or settings.DO_TOKEN
-        self.keep = keep or 3
+        self.keep = keep or 4
 
     def servers(self):
         manager = api.Manager(token=self.token)

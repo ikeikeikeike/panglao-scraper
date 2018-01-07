@@ -14,7 +14,7 @@ exchanger = Plan(
 )
 
 cmd = 'manage.py lifecycle >> /tmp/django_lifecycle.log 2>&1'
-exchanger.script(cmd, every='2.days', at='minute.20')
+exchanger.script(cmd, every='1.days', at='minute.20')
 
 if __name__ == "__main__":
     exchanger.run('update')
