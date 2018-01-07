@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 class Lifecycle:
     """ Manage mark and sweep to servers using digitalocean """
     name = 'camotes-scraper'
-    keep = 4
 
-    def __init__(self, token=None):
+    def __init__(self, token=None, keep=None):
         self.token = token or settings.DO_TOKEN
+        self.keep = keep or 3
 
     def servers(self):
         manager = api.Manager(token=self.token)
