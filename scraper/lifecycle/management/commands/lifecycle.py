@@ -5,5 +5,5 @@ from lifecycle.adapter import do as adapter
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        life = adapter.Lifecycle(keep=4)
+        life = adapter.Lifecycle(keep=10)
         life.samsara()
