@@ -15,6 +15,9 @@ class WorkerManager(models.Manager):
     def alives(self):
         return self.qs.filter(usable=True, busy=False)
 
+    def busies(self):
+        return self.qs.filter(usable=True, busy=True)
+
     def get_by_host(self):
         """ returns unique record """
         return self.qs.filter(host=base.host).first()
