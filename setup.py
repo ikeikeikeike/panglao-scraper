@@ -28,7 +28,6 @@ requirements = [
     'youtube-dl',
 
     'ipython==6.2.1',
-    'plan==0.5',
 
     'python-digitalocean==1.12',
 ]
