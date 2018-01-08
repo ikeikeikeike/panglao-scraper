@@ -13,10 +13,7 @@ class WorkerManager(models.Manager):
         return self.get_queryset()
 
     def alives(self):
-        return self.qs.filter(usable=True, busy=False)
-
-    def busies(self):
-        return self.qs.filter(usable=True, busy=True)
+        return self.qs.filter(usable=True)
 
     def get_by_host(self):
         """ returns unique record """
@@ -32,7 +29,6 @@ class Worker(BaseModel):
     host = models.GenericIPAddressField()
 
     usable = models.BooleanField(default=True)
-    busy = models.BooleanField(default=False)
 
     objects = models.Manager()
     workers = WorkerManager()

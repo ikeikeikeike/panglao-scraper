@@ -24,19 +24,3 @@ def alives(request):
         })
 
     return http.JsonResponse({'root': root})
-
-
-def busies(request):
-    qs = models.Worker.workers.busies().all()
-
-    root = []
-    for worker in qs:
-        args = [request.scheme, worker.host, port]
-
-        root.append({
-            'name': worker.name, 'host': worker.host,
-            'info': '{}://{}:{}{}'.format(*(args + [info_path])),
-            'stream': '{}://{}:{}{}'.format(*(args + [stream_path])),
-        })
-
-    return http.JsonResponse({'root': root})

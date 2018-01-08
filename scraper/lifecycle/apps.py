@@ -15,8 +15,6 @@ class LifecycleConfig(AppConfig):
     verbose_name = "Lifecycle"
 
     def ready(self):
-        #  from lifecycle import signals  # NOQA
-
         try:
             self._load_worker()
         except (
@@ -32,5 +30,4 @@ class LifecycleConfig(AppConfig):
             w, _ = objs.get_or_create(host=base.host)
 
         w.name = base.fqdn
-        w.busy = False
         w.save()
