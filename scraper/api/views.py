@@ -1,8 +1,9 @@
 import os
 import uuid
 import base64
-import urllib.parse
+import shutil
 import subprocess
+import urllib.parse
 
 from django import http
 from django.conf import settings
@@ -30,16 +31,24 @@ def info(request, encoded):
     return http.JsonResponse({'root': root})
 
 
+class Closer(http.FileResponse):
+    def __init__(self, *args, **kwargs):
+        self._exchanger = kwargs.pop('exchanger')
+        super().__init__(*args, **kwargs)
+
+    def close(self):
+        shutil.rmtree(self._exchanger.cwd)
+        super().close()
+
+
 def stream(request, encoded):
     url = base64.b64decode(encoded).decode()
 
     ex = core_stream.Exchanger(url, **request.GET.dict())
-    streaming = ex.exchange()
-    mime = ex.mimetype()
-    ext = ex.extension()
+    streaming, mime, ext = ex.tuple()
 
     filename = urllib.parse.quote(str(uuid.uuid4()))
-    r = http.FileResponse(streaming.stdout, content_type=f"{mime}")
+    r = Closer(streaming.stdout, exchanger=ex, content_type=f"{mime}")
     r['Content-Disposition'] = f'attachment; filename="{filename}.{ext}"'
     return r
 

@@ -1,4 +1,5 @@
 import os
+import tempfile
 import subprocess
 from urllib.parse import urlsplit
 
@@ -28,6 +29,11 @@ class Exchanger:
         self._format = format
         self._ext = ext
         self._options = kwargs
+        self._cwd = tempfile.mkdtemp()
+
+    @property
+    def cwd(self):
+        return self._cwd
 
     def exchange(self):
         if self._ext in self.audio_exts:
@@ -53,6 +59,9 @@ class Exchanger:
 
         return 'video/mp4'
 
+    def tuple(self):
+        return self.exchange(), self.mimetype(), self.extension()
+
     def _gen_youtube(self):
         domain = "{0.netloc}".format(urlsplit(self.url))
 
@@ -68,22 +77,22 @@ class Exchanger:
 
     def _mp3(self):
         youtube = subprocess.Popen(
-            self._gen_youtube(),
+            self._gen_youtube(), cwd=self._cwd,
             shell=True, stdout=PIPE, stderr=None
         )
 
         return subprocess.Popen(
-            ' '.join(conv.gen_mp3()), shell=True,
-            stdin=youtube.stdout, stdout=PIPE, stderr=None
+            ' '.join(conv.gen_mp3()), cwd=self._cwd,
+            shell=True, stdin=youtube.stdout, stdout=PIPE, stderr=None
         )
 
     def _mp4(self):
         youtube = subprocess.Popen(
-            self._gen_youtube(),
+            self._gen_youtube(), cwd=self._cwd,
             shell=True, stdout=PIPE, stderr=None
         )
 
         return subprocess.Popen(
-            ' '.join(conv.gen_mp4()), shell=True,
-            stdin=youtube.stdout, stdout=PIPE, stderr=None
+            ' '.join(conv.gen_mp4()), cwd=self._cwd,
+            shell=True, stdin=youtube.stdout, stdout=PIPE, stderr=None
         )
