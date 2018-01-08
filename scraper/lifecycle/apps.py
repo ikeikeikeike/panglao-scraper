@@ -15,7 +15,7 @@ class LifecycleConfig(AppConfig):
     verbose_name = "Lifecycle"
 
     def ready(self):
-        from lifecycle import signals  # NOQA
+        #  from lifecycle import signals  # NOQA
 
         try:
             self._load_worker()
