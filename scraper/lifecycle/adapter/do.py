@@ -52,7 +52,7 @@ class Lifecycle:
                 token=self.token,
                 name=f"{self.name}{version}",
                 region='ams3',
-                size='512mb',
+                size='s-1vcpu-1gb',
                 private_networking=True,
                 ipv6=True,
                 backups=False,
